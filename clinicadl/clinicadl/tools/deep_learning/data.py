@@ -23,11 +23,11 @@ class MRIDataset(Dataset):
         self.caps_directory = caps_directory
         self.transformations = transformations
         self.diagnosis_code = {
-            'CN': 0,
-            'AD': 1,
-            'sMCI': 0,
-            'pMCI': 1,
-            'MCI': 1,
+            'tier_1': 0,
+            'tier_2': 1,
+            'tier_3': 2,
+            'tier_4': 3,
+            'MCI': 4,
             'unlabeled': -1}
         self.preprocessing = preprocessing
 
