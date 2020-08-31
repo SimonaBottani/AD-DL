@@ -35,6 +35,13 @@ def main():
         if not args.use_cpu and not torch.cuda.is_available():
             raise ValueError("No GPU is available. Please add the -cpu flag to run on CPU.")
 
+
+    if torch.cuda.is_available():
+        print('>> GPU available.')
+        DEVICE = torch.device('cuda')
+        torch.cuda.set_device(3)
+#        torch.cuda.manual_seed(args.random_seed)
+
     args.func(args)
 
     
