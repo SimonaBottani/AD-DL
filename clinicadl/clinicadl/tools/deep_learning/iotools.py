@@ -27,7 +27,7 @@ class Parameters:
     def write(
             self,
             transfer_learning_difference: int = 0,
-            diagnoses: str = ["AD", "CN"],
+            diagnoses: str = ["tier_4", "tier_1"],
             baseline: bool = False,
             minmaxnormalization: bool = False,
             n_splits: int = 1,
