@@ -55,7 +55,7 @@ class Conv5_FC3(nn.Module):
             nn.Linear(1300, 50),
             nn.ReLU(),
 
-            nn.Linear(50, 2)
+            nn.Linear(50, 4)
 
         )
 
