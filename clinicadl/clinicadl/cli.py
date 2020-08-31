@@ -1117,7 +1117,7 @@ def parse_command_line():
     tsv_getlabels_subparser.add_argument(
         "--diagnoses",
         help="Labels that must be extracted from merged_tsv.",
-        nargs="+", type=str, choices=['AD', 'CN', 'MCI', 'sMCI', 'pMCI'], default=['AD', 'CN'])
+        nargs="+", type=str, choices=['tier_1', 'tier_2', 'tier_3', 'tier_4', 'pMCI'], default=['tier_4', 'tier_1'])
     tsv_getlabels_subparser.add_argument(
         "--time_horizon",
         help="Time horizon to analyse stability of MCI subjects.",
@@ -1219,7 +1219,7 @@ def parse_command_line():
     tsv_analysis_subparser.add_argument(
         "--diagnoses",
         help="Labels selected for the demographic analysis.",
-        default=['AD', 'CN'], nargs="+", type=str, choices=['AD', 'CN', 'MCI', 'sMCI', 'pMCI'])
+        default=['tier_4', 'tier_1'], nargs="+", type=str, choices=['tier_1', 'tier_2', 'tier_3', 'tier_4', 'pMCI'])
     tsv_analysis_subparser.add_argument(
         "--mmse_name",
         help="Name of the variable related to the MMSE score in the merged_tsv file.",
