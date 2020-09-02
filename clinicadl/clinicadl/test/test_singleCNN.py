@@ -20,7 +20,7 @@ def test_cnn(output_dir, data_loader, subset_name, split, criterion, model_optio
         model, best_epoch = load_model(model, os.path.join(output_dir, 'fold-%i' % split, 'models', selection),
                                        gpu=gpu, filename='model_best.pth.tar')
 
-        results_df, metrics = test(model, data_loader, gpu, criterion, model_options.mode)
+        results_df, metrics = test(model, data_loader, gpu, criterion, model_options.mode, multiclass=True)
         print("%s level balanced accuracy is %f" % (model_options.mode, metrics['balanced_accuracy']))
 
         mode_level_to_tsvs(output_dir, results_df, metrics, split, selection, model_options.mode, dataset=subset_name)
