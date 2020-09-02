@@ -15,7 +15,7 @@ from clinicadl.tools.deep_learning import EarlyStopping, save_checkpoint
 # CNN train / test  #
 #####################
 
-def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_dir, model_dir, options):
+def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_dir, model_dir, options, multiclass=True):
     """
     Function used to train a CNN.
     The best model and checkpoint will be found in the 'best_model_dir' of options.output_dir.
@@ -31,6 +31,9 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
         model_dir: (str) path to the folder containing the models weights and biases
         options: (Namespace) ensemble of other options given to the main script.
     """
+    print('multiclass training is')
+    print(multiclass)
+
     from tensorboardX import SummaryWriter
     from time import time
 
@@ -89,10 +92,15 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
                     evaluation_flag = False
                     print('Iteration %d' % i)
 
-                    _, results_train = test(model, train_loader, options.gpu, criterion)
-                    mean_loss_train = results_train["total_loss"] / (len(train_loader) * train_loader.batch_size)
+                    if multiclass == False:
+                        _, results_train = test(model, train_loader, options.gpu, criterion)
+                        _, results_valid = test(model, valid_loader, options.gpu, criterion)
+                    elif multiclass == True:
+                        _, results_train = test(model, train_loader, options.gpu, criterion, multiclass=True)
+                        _, results_valid = test(model, valid_loader, options.gpu, criterion, multiclass=True)
 
-                    _, results_valid = test(model, valid_loader, options.gpu, criterion)
+
+                    mean_loss_train = results_train["total_loss"] / (len(train_loader) * train_loader.batch_size)
                     mean_loss_valid = results_valid["total_loss"] / (len(valid_loader) * valid_loader.batch_size)
                     model.train()
 
@@ -122,10 +130,14 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
         model.zero_grad()
         print('Last checkpoint at the end of the epoch %d' % epoch)
 
-        _, results_train = test(model, train_loader, options.gpu, criterion)
-        mean_loss_train = results_train["total_loss"] / (len(train_loader) * train_loader.batch_size)
+        if multiclass == False:
+            _, results_train = test(model, train_loader, options.gpu, criterion)
+            _, results_valid = test(model, valid_loader, options.gpu, criterion)
+        elif multiclass == True:
+            _, results_train = test(model, train_loader, options.gpu, criterion, multiclass=True)
+            _, results_valid = test(model, valid_loader, options.gpu, criterion, multiclass=True)
 
-        _, results_valid = test(model, valid_loader, options.gpu, criterion)
+        mean_loss_train = results_train["total_loss"] / (len(train_loader) * train_loader.batch_size)
         mean_loss_valid = results_valid["total_loss"] / (len(valid_loader) * valid_loader.batch_size)
         model.train()
 
@@ -216,8 +228,29 @@ def evaluate_prediction(y, y_pred):
 
     return results
 
+def evaluate_prediction_multiclass(y, ypred):
+    """
+    Evaluates different metrics based on the list of true labels and predicted labels for multiclass classification.
 
-def test(model, dataloader, use_cuda, criterion, mode="image"):
+    Args:
+        y: (list) true labels
+        y_pred: (list) corresponding predictions
+
+    Returns:
+        (dict) ensemble of metrics
+    """
+    from sklearn.metrics import accuracy_score, balanced_accuracy_score
+
+    balanced_accuracy = balanced_accuracy_score(y, ypred)
+    accuracy = accuracy_score(y, ypred)
+    results = {'accuracy': accuracy,
+               'balanced_accuracy': balanced_accuracy
+               }
+    return results
+
+
+
+def test(model, dataloader, use_cuda, criterion, mode="image", multiclass=False):
     """
     Computes the predictions and evaluation metrics.
 
@@ -231,6 +264,8 @@ def test(model, dataloader, use_cuda, criterion, mode="image"):
         (DataFrame) results of each input.
         (dict) ensemble of metrics + total loss on mode level.
     """
+    print('multiclass is')
+    print(multiclass)
     model.eval()
 
     if mode == "image":
@@ -277,8 +312,14 @@ def test(model, dataloader, use_cuda, criterion, mode="image"):
         results_df.reset_index(inplace=True, drop=True)
 
         # calculate the balanced accuracy
-        results = evaluate_prediction(results_df.true_label.values.astype(int),
+        if multiclass == False:
+            results = evaluate_prediction(results_df.true_label.values.astype(int),
                                       results_df.predicted_label.values.astype(int))
+        elif multiclass == True:
+            results = evaluate_prediction_multiclass(results_df.true_label.values.astype(int),
+                                      results_df.predicted_label.values.astype(int))
+
+
         results_df.reset_index(inplace=True, drop=True)
         results['total_loss'] = total_loss
         torch.cuda.empty_cache()
