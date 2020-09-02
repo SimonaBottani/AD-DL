@@ -722,7 +722,7 @@ def parse_command_line():
     train_data_group.add_argument(
         '--diagnoses', '-d',
         help='List of diagnoses that will be selected for training.',
-        default=['tier_4', 'tier_1'], nargs='+', type=str, choices=['tier_1', 'tier_2', 'tier_3', 'tier_4', 'pMCI'])
+        default=['tier_4', 'tier_1'], nargs='+', type=str, choices=['tier_1', 'tier_2', 'tier_3', 'tier_4', 'gaudo_0', 'gaudo_1'])
     train_data_group.add_argument(
         '--baseline',
         help='If provided, only the baseline sessions are used for training.',
