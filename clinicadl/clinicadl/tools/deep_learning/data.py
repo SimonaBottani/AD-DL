@@ -27,7 +27,8 @@ class MRIDataset(Dataset):
             'tier_2': 1,
             'tier_3': 2,
             'tier_4': 3,
-            'MCI': 4,
+            'gaudo_0': 4,
+            'gaudo_1': 5,
             'unlabeled': -1}
         self.preprocessing = preprocessing
 
