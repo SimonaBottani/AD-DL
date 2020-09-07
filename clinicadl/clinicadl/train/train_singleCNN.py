@@ -68,6 +68,7 @@ def train_single_cnn(params):
         )
 
         # Initialize the model
+        print(params.tsv_path)
         print('Initialization of the model')
         model = init_model(params.model, gpu=params.gpu, dropout=params.dropout)
         model = transfer_learning(model, fi, source_path=params.transfer_learning_path,
