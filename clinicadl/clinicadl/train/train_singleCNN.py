@@ -88,10 +88,10 @@ def train_single_cnn(params):
 
         print('Beginning the training task')
         train(model, train_loader, valid_loader, criterion,
-              optimizer, False, log_dir, model_dir, params, multiclass=False)
+              optimizer, False, log_dir, model_dir, params, multiclass=True)
 
         params.model_path = params.output_dir
         test_cnn(params.output_dir, train_loader, "train",
-                 fi, criterion, params, gpu=params.gpu, multiclass=False)
+                 fi, criterion, params, gpu=params.gpu, multiclass=True)
         test_cnn(params.output_dir, valid_loader, "validation",
-                 fi, criterion, params, gpu=params.gpu, multiclass=False)
+                 fi, criterion, params, gpu=params.gpu, multiclass=True)
