@@ -670,3 +670,19 @@ def mix_slices(df_training, df_validation, mri_plane=0, val_size=0.15):
     df_sub_valid.reset_index(inplace=True, drop=True)
 
     return df_sub_train, df_sub_valid
+
+
+def weight_vector(tsv_path, diagnoses):
+    import pandas as pd
+    import os
+    import numpy as np
+
+    len_tsv = []
+    class_weights = []
+    for d in diagnoses:
+        tsv = pd.read_csv(os.path.join(tsv_path, d + '.tsv'), sep='\t')
+        len_tsv.append(len(tsv))
+    sum_tsv = np.sum(np.array(len_tsv))
+    for x in len_tsv:
+        class_weights.append(sum_tsv / (len(diagnoses) * x))
+    return class_weights

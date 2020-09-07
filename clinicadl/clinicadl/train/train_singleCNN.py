@@ -2,12 +2,14 @@
 
 import os
 import torch
+import pandas as pd
 from torch.utils.data import DataLoader
 
 from ..tools.deep_learning.models import transfer_learning, init_model
 from ..tools.deep_learning.data import (get_transforms,
                                         load_data,
-                                        return_dataset)
+                                        return_dataset,
+                                        weight_vector)
 from ..tools.deep_learning.cnn_utils import train
 from clinicadl.test.test_singleCNN import test_cnn
 
@@ -68,14 +70,18 @@ def train_single_cnn(params):
         )
 
         # Initialize the model
-        print(data_train)
+        #calculate_weights
+        weights = weight_vector(params.tsv_path, params.diagnoses)
+        print(weights)
+
+
         print('Initialization of the model')
         model = init_model(params.model, gpu=params.gpu, dropout=params.dropout)
         model = transfer_learning(model, fi, source_path=params.transfer_learning_path,
                                   gpu=params.gpu, selection=params.transfer_learning_selection)
 
         # Define criterion and optimizer
-        criterion = torch.nn.CrossEntropyLoss()
+        criterion = torch.nn.CrossEntropyLoss(weight=torch.FloatTensor(weights).cuda())
         optimizer = eval("torch.optim." + params.optimizer)(filter(lambda x: x.requires_grad, model.parameters()),
                                                             lr=params.learning_rate,
                                                             weight_decay=params.weight_decay)
