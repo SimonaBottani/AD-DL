@@ -29,6 +29,15 @@ class MRIDataset(Dataset):
             'tier_4': 3,
             'gaudo_0': 0,
             'gaudo_1': 1,
+            'mov_0': 0,
+            'mov_1': 1,
+            'mov_2': 2,
+            'noise_0': 0,
+            'noise_1': 1,
+            'noise_2': 2,
+            'con_0': 0,
+            'con_1': 1,
+            'con_2': 2,
             'unlabeled': -1}
         self.preprocessing = preprocessing
 

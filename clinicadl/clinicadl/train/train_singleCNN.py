@@ -47,6 +47,10 @@ def train_single_cnn(params):
                                     transformations, params)
 
         # Use argument load to distinguish training and testing
+
+        #### insert here data sampler
+        #data_sampler = generate_sampler(data_train, 'weighted')
+
         train_loader = DataLoader(
             data_train,
             batch_size=params.batch_size,

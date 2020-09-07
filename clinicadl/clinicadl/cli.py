@@ -722,7 +722,7 @@ def parse_command_line():
     train_data_group.add_argument(
         '--diagnoses', '-d',
         help='List of diagnoses that will be selected for training.',
-        default=['tier_4', 'tier_1'], nargs='+', type=str, choices=['tier_1', 'tier_2', 'tier_3', 'tier_4', 'gaudo_0', 'gaudo_1'])
+        default=['tier_4', 'tier_1'], nargs='+', type=str, choices=['tier_1', 'tier_2', 'tier_3', 'tier_4', 'gaudo_0', 'gaudo_1', 'mov_0', 'mov_1', 'mov_2', 'noise_0', 'noise_1', 'noise_2', 'cont_0', 'cont_1', 'cont_2'])
     train_data_group.add_argument(
         '--baseline',
         help='If provided, only the baseline sessions are used for training.',
@@ -1117,7 +1117,7 @@ def parse_command_line():
     tsv_getlabels_subparser.add_argument(
         "--diagnoses",
         help="Labels that must be extracted from merged_tsv.",
-        nargs="+", type=str, choices=['tier_1', 'tier_2', 'tier_3', 'tier_4', 'gaudo_0', 'gaudo_1'], default=['tier_4', 'tier_1'])
+        nargs="+", type=str, choices=['tier_1', 'tier_2', 'tier_3', 'tier_4', 'gaudo_0', 'gaudo_1', 'mov_0', 'mov_1', 'mov_2', 'noise_0', 'noise_1', 'noise_2', 'cont_0', 'cont_1', 'cont_2'], default=['tier_4', 'tier_1'])
     tsv_getlabels_subparser.add_argument(
         "--time_horizon",
         help="Time horizon to analyse stability of MCI subjects.",
@@ -1219,7 +1219,7 @@ def parse_command_line():
     tsv_analysis_subparser.add_argument(
         "--diagnoses",
         help="Labels selected for the demographic analysis.",
-        default=['tier_4', 'tier_1'], nargs="+", type=str, choices=['tier_1', 'tier_2', 'tier_3', 'tier_4', 'gaudo_0', 'gaudo_1'])
+        default=['tier_4', 'tier_1'], nargs="+", type=str, choices=['tier_1', 'tier_2', 'tier_3', 'tier_4', 'gaudo_0', 'gaudo_1', 'mov_0', 'mov_1', 'mov_2', 'noise_0', 'noise_1', 'noise_2', 'cont_0', 'cont_1', 'cont_2'])
     tsv_analysis_subparser.add_argument(
         "--mmse_name",
         help="Name of the variable related to the MMSE score in the merged_tsv file.",
