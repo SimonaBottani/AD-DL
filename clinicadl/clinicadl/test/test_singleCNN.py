@@ -94,4 +94,4 @@ if __name__ == "__main__":
             pin_memory=True)
 
         test_cnn(options.model_path, test_loader, options.dataset, split, criterion,
-                 model_options, options.gpu)
+                 model_options, options.gpu, multiclass=True)
