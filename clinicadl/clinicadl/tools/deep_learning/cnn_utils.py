@@ -31,8 +31,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
         model_dir: (str) path to the folder containing the models weights and biases
         options: (Namespace) ensemble of other options given to the main script.
     """
-    print('multiclass training is')
-    print(multiclass)
+    print('multiclass training is: ' + str(multiclass))
 
     from tensorboardX import SummaryWriter
     from time import time
@@ -44,6 +43,10 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
     # Create writers
     writer_train = SummaryWriter(os.path.join(log_dir, 'train'))
     writer_valid = SummaryWriter(os.path.join(log_dir, 'validation'))
+
+    # Create tsv
+    columns = ['epoch', 'iteration', 'bacc_train', 'mean_loss_train', 'bacc_valid', 'mean_loss_valid']
+    filename = os.path.join(log_dir, 'training.tsv')
 
     # Initialize variables
     best_valid_accuracy = 0.0
@@ -109,6 +112,13 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
                     writer_train.add_scalar('loss', mean_loss_train, global_step)
                     writer_valid.add_scalar('balanced_accuracy', results_valid["balanced_accuracy"], global_step)
                     writer_valid.add_scalar('loss', mean_loss_valid, global_step)
+
+                    # Write results on the dataframe
+                    row = np.array([epoch, i, results_train["balanced_accuracy"], mean_loss_train, results_valid["balanced_accuracy"], mean_loss_valid]).reshape(1, -1)
+                    row_df = pd.DataFrame(row, columns=columns)
+                    with open(filename, 'a') as f:
+                        row_df.to_csv(f, header=False, index=False, sep='\t')
+
                     print("%s level training accuracy is %f at the end of iteration %d"
                           % (options.mode, results_train["balanced_accuracy"], i))
                     print("%s level validation accuracy is %f at the end of iteration %d"
@@ -146,6 +156,14 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
         writer_train.add_scalar('loss', mean_loss_train, global_step)
         writer_valid.add_scalar('balanced_accuracy', results_valid["balanced_accuracy"], global_step)
         writer_valid.add_scalar('loss', mean_loss_valid, global_step)
+
+        # Write results on the dataframe
+        row = np.array([epoch, i, results_train["balanced_accuracy"], mean_loss_train, results_valid["balanced_accuracy"],
+             mean_loss_valid]).reshape(1, -1)
+        row_df = pd.DataFrame(row, columns=columns)
+        with open(filename, 'a') as f:
+            row_df.to_csv(f, header=False, index=False, sep='\t')
+
         print("%s level training accuracy is %f at the end of iteration %d"
               % (options.mode, results_train["balanced_accuracy"], len(train_loader)))
         print("%s level validation accuracy is %f at the end of iteration %d"
