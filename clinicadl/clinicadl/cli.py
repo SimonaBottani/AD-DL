@@ -715,6 +715,10 @@ def parse_command_line():
         '--batch_size',
         default=2, type=int,
         help='Batch size for training. (default=2)')
+    train_comput_group.add_argument(
+        '--num_gpu',
+        default=2, type=int,
+        help='Gpu to use if gpu ==True. (default=2)')
 
     # Data management
     train_data_group = train_parent_parser.add_argument_group(
