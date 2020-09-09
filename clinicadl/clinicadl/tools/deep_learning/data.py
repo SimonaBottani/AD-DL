@@ -35,9 +35,9 @@ class MRIDataset(Dataset):
             'noise_0': 0,
             'noise_1': 1,
             'noise_2': 2,
-            'con_0': 0,
-            'con_1': 1,
-            'con_2': 2,
+            'cont_0': 0,
+            'cont_1': 1,
+            'cont_2': 2,
             'unlabeled': -1}
         self.preprocessing = preprocessing
 
