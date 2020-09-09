@@ -116,7 +116,6 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
                     # Write results on the dataframe
                     row = np.array([epoch, i, results_train["balanced_accuracy"], mean_loss_train, results_valid["balanced_accuracy"], mean_loss_valid]).reshape(1, -1)
                     row_df = pd.DataFrame(row, columns=columns)
-                    print(filename)
                     with open(filename, 'a') as f:
                         row_df.to_csv(f, header=False, index=False, sep='\t')
 
