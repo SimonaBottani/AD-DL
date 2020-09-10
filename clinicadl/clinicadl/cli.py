@@ -737,6 +737,12 @@ def parse_command_line():
         help='Disable default MinMaxNormalization.',
         action="store_true",
         default=False)
+    train_data_group.add_argument(
+        '--multiclass', '-multiclass',
+        help='If True, multiclass classification',
+        action="store_true",
+        default=False)
+
 
     # Cross-validation
     train_cv_group = train_parent_parser.add_argument_group(

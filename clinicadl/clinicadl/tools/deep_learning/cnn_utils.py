@@ -15,7 +15,7 @@ from clinicadl.tools.deep_learning import EarlyStopping, save_checkpoint
 # CNN train / test  #
 #####################
 
-def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_dir, model_dir, options, multiclass=True):
+def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_dir, model_dir, options):
     """
     Function used to train a CNN.
     The best model and checkpoint will be found in the 'best_model_dir' of options.output_dir.
@@ -52,6 +52,10 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
     best_valid_accuracy = 0.0
     best_valid_loss = np.inf
     epoch = options.beginning_epoch
+
+    print('Multiclass i have selected')
+    print(options.multiclass)
+    print('####')
 
     model.train()  # set the module to training mode
 

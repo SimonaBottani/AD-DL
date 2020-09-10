@@ -94,8 +94,10 @@ def train_single_cnn(params):
             params.output_dir, 'fold-%i' % fi, 'models')
 
         print('Beginning the training task')
+        print('and my multiclass is:')
+        print(params.multiclass)
         train(model, train_loader, valid_loader, criterion,
-              optimizer, False, log_dir, model_dir, params, multiclass=True)
+              optimizer, False, log_dir, model_dir, params)
 
         params.model_path = params.output_dir
         test_cnn(params.output_dir, train_loader, "train",
