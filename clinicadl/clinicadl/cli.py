@@ -135,7 +135,8 @@ def train_func(args):
                 batch_size=args.batch_size,
                 evaluation_steps=args.evaluation_steps,
                 num_workers=args.nproc,
-                visualization=args.visualization
+                visualization=args.visualization,
+                multiclass=args.multiclass
             )
             train_autoencoder(train_params_autoencoder)
         else:
@@ -166,7 +167,9 @@ def train_func(args):
                 evaluation_steps=args.evaluation_steps,
                 num_workers=args.nproc,
                 transfer_learning_path=args.transfer_learning_path,
-                transfer_learning_selection=args.transfer_learning_selection
+                transfer_learning_selection=args.transfer_learning_selection,
+                num_gpu=args.num_gpu,
+                multiclass=args.multiclass
             )
             train_single_cnn(train_params_cnn)
     elif args.mode == 'slice':

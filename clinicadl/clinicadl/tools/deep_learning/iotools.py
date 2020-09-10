@@ -54,7 +54,8 @@ class Parameters:
             discarded_slices: int = 20,
             prepare_dl: bool = False,
             visualization: bool = False,
-            num_gpu: int=2
+            num_gpu: int=2,
+            multiclass: bool = False
     ):
         """
         Optional parameters used for training CNN.
@@ -123,6 +124,7 @@ class Parameters:
         self.visualization = visualization
         self.selection_threshold = selection_threshold
         self.num_gpu = num_gpu
+        self.multiclass = multiclass
 
 
 def check_and_clean(d):
