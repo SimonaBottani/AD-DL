@@ -31,7 +31,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
         model_dir: (str) path to the folder containing the models weights and biases
         options: (Namespace) ensemble of other options given to the main script.
     """
-    print('multiclass training is: ' + str(multiclass))
+    print('multiclass training is: ' + str(options.multiclass))
 
     from tensorboardX import SummaryWriter
     from time import time
