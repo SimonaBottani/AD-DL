@@ -53,9 +53,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
     best_valid_loss = np.inf
     epoch = options.beginning_epoch
 
-    print('Multiclass i have selected')
-    print(options.multiclass)
-    print('####')
+
 
     model.train()  # set the module to training mode
 
@@ -99,10 +97,10 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
                     evaluation_flag = False
                     print('Iteration %d' % i)
 
-                    if multiclass == False:
+                    if options.multiclass == False:
                         _, results_train = test(model, train_loader, options.gpu, criterion)
                         _, results_valid = test(model, valid_loader, options.gpu, criterion)
-                    elif multiclass == True:
+                    elif options.multiclass == True:
                         _, results_train = test(model, train_loader, options.gpu, criterion, multiclass=True)
                         _, results_valid = test(model, valid_loader, options.gpu, criterion, multiclass=True)
 
@@ -144,10 +142,10 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
         model.zero_grad()
         print('Last checkpoint at the end of the epoch %d' % epoch)
 
-        if multiclass == False:
+        if options.multiclass == False:
             _, results_train = test(model, train_loader, options.gpu, criterion)
             _, results_valid = test(model, valid_loader, options.gpu, criterion)
-        elif multiclass == True:
+        elif options.multiclass == True:
             _, results_train = test(model, train_loader, options.gpu, criterion, multiclass=True)
             _, results_valid = test(model, valid_loader, options.gpu, criterion, multiclass=True)
 
