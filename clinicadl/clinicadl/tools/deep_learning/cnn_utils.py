@@ -319,6 +319,8 @@ def test(model, dataloader, use_cuda, criterion, mode="image", multiclass=False)
                 inputs, labels = data['image'], data['label']
             outputs = model(inputs)
             loss = criterion(outputs, labels)
+            print('this is my loss')
+            print(loss)
             total_loss += loss.item()
             _, predicted = torch.max(outputs.data, 1)
 
@@ -352,6 +354,8 @@ def test(model, dataloader, use_cuda, criterion, mode="image", multiclass=False)
         results_df.reset_index(inplace=True, drop=True)
         results['total_loss'] = total_loss
         torch.cuda.empty_cache()
+
+
 
     return results_df, results
 
