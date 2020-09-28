@@ -42,7 +42,7 @@ def train(decoder, train_loader, valid_loader, criterion, optimizer, resume,
     print(decoder)
 
     if options.gpu:
-        decoder.cuda()
+        decoder = decoder.cuda()
 
     # Initialize variables
     best_loss_valid = np.inf
