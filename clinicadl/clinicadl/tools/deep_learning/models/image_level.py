@@ -122,7 +122,9 @@ class Conv5_FC3_4_classes(nn.Module):
 
     def forward(self, x):
         x = self.features(x)
+        print(x)
         x = self.classifier(x)
+        print(x)
 
         return x
 

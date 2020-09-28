@@ -317,6 +317,8 @@ def test(model, dataloader, use_cuda, criterion, mode="image", multiclass=False)
                 inputs, labels = data['image'].cuda(), data['label'].cuda()
             else:
                 inputs, labels = data['image'], data['label']
+
+            print(model)
             outputs = model(inputs)
             print('I am in the test and these are my labels')
             print(labels)
