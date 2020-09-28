@@ -318,6 +318,10 @@ def test(model, dataloader, use_cuda, criterion, mode="image", multiclass=False)
             else:
                 inputs, labels = data['image'], data['label']
             outputs = model(inputs)
+            print('I am in the test and these are my labels')
+            print(labels)
+            print('I am in the test and these are my outputs for the labels')
+            print(outputs)
             loss = criterion(outputs, labels)
             print('this is my loss')
             print(loss)
