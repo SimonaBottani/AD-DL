@@ -175,6 +175,8 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
         loss_is_best = mean_loss_valid < best_valid_loss
         best_valid_accuracy = max(results_valid["balanced_accuracy"], best_valid_accuracy)
         best_valid_loss = min(mean_loss_valid, best_valid_loss)
+        print(best_valid_loss)
+        print(loss_is_best)
 
         save_checkpoint({'model': model.state_dict(),
                          'epoch': epoch,
