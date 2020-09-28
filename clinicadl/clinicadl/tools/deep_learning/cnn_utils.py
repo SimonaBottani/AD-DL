@@ -149,6 +149,12 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
             _, results_train = test(model, train_loader, options.gpu, criterion, multiclass=True)
             _, results_valid = test(model, valid_loader, options.gpu, criterion, multiclass=True)
 
+
+        print('results valid total loss')
+        print(results_valid["total_loss"])
+        print('anc in the training')
+        print(results_train["total_loss"])
+
         mean_loss_train = results_train["total_loss"] / (len(train_loader) * train_loader.batch_size)
         mean_loss_valid = results_valid["total_loss"] / (len(valid_loader) * valid_loader.batch_size)
         model.train()
