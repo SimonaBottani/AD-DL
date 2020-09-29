@@ -114,6 +114,8 @@ class MRIDataset(Dataset):
         try:
             image_path = self._get_path(participant_id, session_id, "image")
             image = torch.load(image_path)
+            image[image != image] = 0
+
         except FileNotFoundError:
             image_path = get_nii_path(
                 self.caps_directory,
