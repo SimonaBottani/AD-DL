@@ -167,7 +167,7 @@ def test_ae(decoder, dataloader, use_cuda, criterion):
     return total_loss
 
 
-def visualize_image(decoder, dataloader, visualization_path, nb_images=1):
+def visualize_image(decoder, dataloader, visualization_path, nb_images=1, use_gpu=False):
     """
     Writes the nifti files of images and their reconstructions by an autoencoder.
 
@@ -185,7 +185,9 @@ def visualize_image(decoder, dataloader, visualization_path, nb_images=1):
 
     dataset = dataloader.dataset
     decoder.eval()
-
+    if use_gpu:
+        decoder.cuda()
+        
     for image_index in range(nb_images):
         data = dataset[image_index]
         image = data["image"].unsqueeze(0)
