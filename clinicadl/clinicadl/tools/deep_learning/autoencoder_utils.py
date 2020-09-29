@@ -191,6 +191,9 @@ def visualize_image(decoder, dataloader, visualization_path, nb_images=1, use_gp
     for image_index in range(nb_images):
         data = dataset[image_index]
         image = data["image"].unsqueeze(0)
+        if use_gpu:
+            image = image.cuda()
+
         output = decoder(image)
 
         output_np = output.squeeze(0).squeeze(0).cpu().detach().numpy()

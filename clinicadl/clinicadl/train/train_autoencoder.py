@@ -84,9 +84,7 @@ def train_autoencoder(params):
             nb_images = train_loader.dataset.elem_per_image
             if nb_images <= 2:
                 nb_images *= 3
-            visualize_image(best_decoder, valid_loader, os.path.join(visualization_dir, "validation"),
-                            nb_images=nb_images, gpu=params.gpu)
-            visualize_image(best_decoder, train_loader, os.path.join(visualization_dir, "train"),
-                            nb_images=nb_images, gpu=params.gpu)
+            visualize_image(best_decoder, valid_loader, os.path.join(visualization_dir, "validation"), nb_images=nb_images, gpu=params.gpu)
+            visualize_image(best_decoder, train_loader, os.path.join(visualization_dir, "train"), nb_images=nb_images, gpu=params.gpu)
         del decoder
         torch.cuda.empty_cache()
