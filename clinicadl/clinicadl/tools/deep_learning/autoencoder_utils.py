@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import warnings
+import pandas as pd
 
 from clinicadl.tools.deep_learning.iotools import check_and_clean
 from clinicadl.tools.deep_learning import EarlyStopping, save_checkpoint
@@ -37,6 +38,10 @@ def train(decoder, train_loader, valid_loader, criterion, optimizer, resume,
     # Create writers
     writer_train = SummaryWriter(os.path.join(log_dir, 'train'))
     writer_valid = SummaryWriter(os.path.join(log_dir, 'validation'))
+
+    columns = ['epoch', 'iteration', 'mean_loss_train', 'mean_loss_valid']
+    filename = os.path.join(log_dir, 'training.tsv')
+
 
     decoder.train()
     print(decoder)
@@ -88,6 +93,13 @@ def train(decoder, train_loader, valid_loader, criterion, optimizer, resume,
 
                     writer_train.add_scalar('loss', mean_loss_train, i + epoch * len(train_loader))
                     writer_valid.add_scalar('loss', mean_loss_valid, i + epoch * len(train_loader))
+
+                    # Write results on the dataframe
+                    row = np.array([epoch, i, mean_loss_train,  mean_loss_valid]).reshape(1, -1)
+                    row_df = pd.DataFrame(row, columns=columns)
+                    with open(filename, 'a') as f:
+                        row_df.to_csv(f, header=False, index=False, sep='\t')
+
                     print("Scan level validation loss is %f at the end of iteration %d" % (loss_valid, i))
 
         # If no step has been performed, raise Exception
@@ -112,6 +124,11 @@ def train(decoder, train_loader, valid_loader, criterion, optimizer, resume,
         writer_train.add_scalar('loss', mean_loss_train, i + epoch * len(train_loader))
         writer_valid.add_scalar('loss', mean_loss_valid, i + epoch * len(train_loader))
         print("Scan level validation loss is %f at the end of iteration %d" % (loss_valid, i))
+
+        row = np.array([epoch, i, mean_loss_train, mean_loss_valid]).reshape(1, -1)
+        row_df = pd.DataFrame(row, columns=columns)
+        with open(filename, 'a') as f:
+            row_df.to_csv(f, header=False, index=False, sep='\t')
 
         is_best = loss_valid < best_loss_valid
         best_loss_valid = min(best_loss_valid, loss_valid)
