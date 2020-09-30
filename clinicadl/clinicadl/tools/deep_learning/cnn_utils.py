@@ -80,9 +80,6 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
             ### to delete after test
             imgs[imgs != imgs] = 0
             imgs = (imgs - imgs.min()) / (imgs.max() - imgs.min())
-            print(torch.max(torch.reshape(imgs, (-1,))), torch.min(torch.reshape(imgs, (-1,))), torch.isnan(imgs).any())
-            #print(torch.isnan(imgs).any())
-            ### to delete after test
 
             train_output = model(imgs)
             _, predict_batch = train_output.topk(1)
@@ -157,11 +154,6 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
             _, results_train = test(model, train_loader, options.gpu, criterion, multiclass=True)
             _, results_valid = test(model, valid_loader, options.gpu, criterion, multiclass=True)
 
-
-        print('results valid total loss')
-        print(results_valid["total_loss"])
-        print('and in the training')
-        print(results_train["total_loss"])
 
         mean_loss_train = results_train["total_loss"] / (len(train_loader) * train_loader.batch_size)
         mean_loss_valid = results_valid["total_loss"] / (len(valid_loader) * valid_loader.batch_size)
@@ -323,21 +315,13 @@ def test(model, dataloader, use_cuda, criterion, mode="image", multiclass=False)
             else:
                 inputs, labels = data['image'], data['label']
 
-            ### to delete
 
             inputs[inputs != inputs] = 0
             inputs = (inputs - inputs.min()) / (inputs.max() - inputs.min())
-            print(torch.max(torch.reshape(inputs, (-1,))), torch.min(torch.reshape(inputs, (-1,))), torch.isnan(inputs).any())
-            ### to delete
-            
+
+
             outputs = model(inputs)
-            print('I am in the test and these are my labels')
-            print(labels)
-            print('I am in the test and these are my outputs for the labels')
-            print(outputs)
             loss = criterion(outputs, labels)
-            print('this is my loss')
-            print(loss)
             total_loss += loss.item()
             _, predicted = torch.max(outputs.data, 1)
 
