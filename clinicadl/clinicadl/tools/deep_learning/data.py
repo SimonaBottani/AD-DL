@@ -115,6 +115,7 @@ class MRIDataset(Dataset):
             image_path = self._get_path(participant_id, session_id, "image")
             image = torch.load(image_path)
             image[image != image] = 0
+            image = (image - image.min()) / (image.max() - image.min())
 
         except FileNotFoundError:
             image_path = get_nii_path(
