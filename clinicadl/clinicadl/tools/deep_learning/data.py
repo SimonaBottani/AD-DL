@@ -116,6 +116,8 @@ class MRIDataset(Dataset):
             image = torch.load(image_path)
             image[image != image] = 0
             image = (image - image.min()) / (image.max() - image.min())
+            print(torch.max(torch.reshape(image, (-1,))))
+            print(torch.isnan(image).any())
 
         except FileNotFoundError:
             image_path = get_nii_path(
