@@ -76,6 +76,13 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
                 imgs, labels = data['image'].cuda(), data['label'].cuda()
             else:
                 imgs, labels = data['image'], data['label']
+
+            ### to delete after test
+            imgs[imgs != imgs] = 0
+            imgs = (imgs - imgs.min()) / (imgs.max() - imgs.min())
+            print(torch.max(torch.reshape(imgs, (-1,))))
+            print(torch.isnan(imgs).any())
+            ### to delete after test
             train_output = model(imgs)
             _, predict_batch = train_output.topk(1)
             loss = criterion(train_output, labels)
