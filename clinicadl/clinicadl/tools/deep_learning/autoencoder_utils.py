@@ -69,6 +69,11 @@ def train(decoder, train_loader, valid_loader, criterion, optimizer, resume,
             else:
                 imgs = data['image']
 
+            ## modif here
+            imgs[imgs != imgs] = 0
+            imgs = (imgs - imgs.min()) / (imgs.max() - imgs.min())
+            ##
+
             train_output = decoder(imgs)
             loss = criterion(train_output, imgs)
             loss.backward()
@@ -174,6 +179,12 @@ def test_ae(decoder, dataloader, use_cuda, criterion):
             inputs = data['image'].cuda()
         else:
             inputs = data['image']
+
+        ## modif here
+        inputs[inputs != inputs] = 0
+        inputs = (inputs - inputs.min()) / (inputs.max() - inputs.min())
+        ##
+
 
         outputs = decoder(inputs)
         loss = criterion(outputs, inputs)
