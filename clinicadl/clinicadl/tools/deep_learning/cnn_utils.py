@@ -323,6 +323,13 @@ def test(model, dataloader, use_cuda, criterion, mode="image", multiclass=False)
             else:
                 inputs, labels = data['image'], data['label']
 
+            ### to delete
+
+            inputs[inputs != inputs] = 0
+            inputs = (inputs - inputs.min()) / (inputs.max() - inputs.min())
+            print(torch.max(torch.reshape(inputs, (-1,))), torch.min(torch.reshape(inputs, (-1,))), torch.isnan(inputs).any())
+            ### to delete
+            
             outputs = model(inputs)
             print('I am in the test and these are my labels')
             print(labels)
