@@ -93,5 +93,6 @@ if __name__ == "__main__":
             num_workers=options.num_workers,
             pin_memory=True)
 
+
         test_cnn(options.model_path, test_loader, options.dataset, split, criterion,
                  model_options, options.gpu, multiclass=True)

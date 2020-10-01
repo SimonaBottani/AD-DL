@@ -44,7 +44,6 @@ def train(decoder, train_loader, valid_loader, criterion, optimizer, resume,
 
 
     decoder.train()
-    print(decoder)
 
     if options.gpu:
         decoder = decoder.cuda()
