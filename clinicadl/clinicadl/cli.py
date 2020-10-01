@@ -394,7 +394,8 @@ def classify_func(args):
         args.prefix_output,
         gpu=not args.use_cpu,
         prepare_dl=args.use_extracted_features,
-        multiclass = args.multiclass
+        multiclass=args.multiclass,
+        num_gpu=args.num_gpu
     )
 
 # Functions to dispatch command line options from tsvtool to corresponding
@@ -1070,6 +1071,17 @@ def parse_command_line():
         '-cpu', '--use_cpu', action='store_true',
         help='Uses CPU instead of GPU.',
         default=False)
+    classify_parser.add_argument(
+        '--multiclass', '-multiclass',
+        help='If True, multiclass classification',
+        action="store_true",
+        default=False)
+    classify_parser.add_argument(
+        '--num_gpu',
+        default=2, type=int,
+        help='Gpu to use if gpu ==True. (default=2)')
+
+
     classify_parser.set_defaults(func=classify_func)
 
     tsv_parser = subparser.add_parser(
