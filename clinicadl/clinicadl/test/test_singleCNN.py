@@ -95,4 +95,4 @@ if __name__ == "__main__":
 
 
         test_cnn(options.model_path, test_loader, options.dataset, split, criterion,
-                 model_options, options.gpu, multiclass=True)
+                 model_options, options.gpu, multiclass=options.multiclass)
