@@ -19,7 +19,9 @@ def classify(caps_dir,
              prefix_output='prefix_DB',
              no_labels=False,
              gpu=True,
-             prepare_dl=True):
+             prepare_dl=True,
+             multiclass=True,
+             num_gpu=2):
     """
     This function verify the input folders, and the existance of the json file
     then it launch the inference stage from a specific model.
