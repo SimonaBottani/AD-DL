@@ -393,7 +393,8 @@ def classify_func(args):
         args.model_path,
         args.prefix_output,
         gpu=not args.use_cpu,
-        prepare_dl=args.use_extracted_features
+        prepare_dl=args.use_extracted_features,
+        multiclass = args.multiclass
     )
 
 # Functions to dispatch command line options from tsvtool to corresponding
