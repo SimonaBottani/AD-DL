@@ -20,7 +20,7 @@ def classify(caps_dir,
              no_labels=False,
              gpu=True,
              prepare_dl=True,
-             multiclass=True,
+             multiclass=False,
              num_gpu=2):
     """
     This function verify the input folders, and the existance of the json file
@@ -75,7 +75,7 @@ def classify(caps_dir,
         prefix_output,
         no_labels,
         gpu,
-        prepare_dl)
+        prepare_dl, multiclass)
 
 
 def inference_from_model(caps_dir,
@@ -85,7 +85,7 @@ def inference_from_model(caps_dir,
                          prefix=None,
                          no_labels=False,
                          gpu=True,
-                         prepare_dl=False):
+                         prepare_dl=False, multiclass=False):
     """
     Inference from previously trained model.
 
@@ -180,6 +180,7 @@ def inference_from_model(caps_dir,
             tsv_path,
             model_path,
             options,
+            multiclass,
             num_cnn=num_cnn
         )
 
@@ -207,7 +208,7 @@ def inference_from_model(caps_dir,
 
 
 def inference_from_model_generic(caps_dir, tsv_path, model_path, model_options,
-                                 num_cnn=None, selection="best_balanced_accuracy"):
+                                 multiclass=False, num_cnn=None, selection="best_balanced_accuracy", ):
     '''
     Inference using an image/subject CNN model
 
@@ -278,6 +279,7 @@ def inference_from_model_generic(caps_dir, tsv_path, model_path, model_options,
             gpu, filename='model_best.pth.tar')
 
         # Read/localize the data
+
         data_to_test = return_dataset(
             model_options.mode,
             caps_dir,
@@ -300,7 +302,8 @@ def inference_from_model_generic(caps_dir, tsv_path, model_path, model_options,
             test_loader,
             gpu,
             criterion,
-            mode=model_options.mode)
+            model_options.mode, multiclass)
+            #mode=model_options.mode, multiclass)
 
         metrics_df = pd.DataFrame(metrics, index=[0])
 
