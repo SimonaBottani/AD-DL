@@ -16,8 +16,6 @@ def test_cnn(output_dir, data_loader, subset_name, split, criterion, model_optio
 
     for selection in ["best_balanced_accuracy", "best_loss"]:
         # load the best trained model during the training
-        print('multiclass in this CASEEEE')
-        print(multiclass)
         model = create_model(model_options.model, gpu, dropout=model_options.dropout)
         model, best_epoch = load_model(model, os.path.join(output_dir, 'fold-%i' % split, 'models', selection),
                                        gpu=gpu, filename='model_best.pth.tar')
