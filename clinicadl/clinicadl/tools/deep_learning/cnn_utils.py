@@ -537,3 +537,336 @@ def check_prediction(row):
         return 1
     else:
         return 0
+
+##################
+# Multi - Task - #
+##################
+
+def train_multitask(model, train_loader, valid_loader, criterion, optimizer, resume, log_dir, model_dir, options):
+    """
+    Function used to train a CNN.
+    The best model and checkpoint will be found in the 'best_model_dir' of options.output_dir.
+
+    Args:
+        model: (Module) CNN to be trained
+        train_loader: (DataLoader) wrapper of the training dataset
+        valid_loader: (DataLoader) wrapper of the validation dataset
+        criterion: (loss) function to calculate the loss
+        optimizer: (torch.optim) optimizer linked to model parameters
+        resume: (bool) if True, a begun job is resumed
+        log_dir: (str) path to the folder containing the logs
+        model_dir: (str) path to the folder containing the models weights and biases
+        options: (Namespace) ensemble of other options given to the main script.
+    """
+    print('multiclass training is: ' + str(options.multiclass))
+
+    from tensorboardX import SummaryWriter
+    from time import time
+
+    if not resume:
+        check_and_clean(model_dir)
+        check_and_clean(log_dir)
+
+    # Create writers
+
+    # Create tsv
+    columns = ['epoch', 'iteration', 'bacc_train_1', 'bacc_train_2', 'bacc_train_3', 'bacc_train_4',
+               'mean_loss_train', 'bacc_valid_1', 'bacc_valid_2', 'bacc_valid_3', 'bacc_valid_4',
+               'mean_loss_valid']
+    filename = os.path.join(log_dir, 'training.tsv')
+
+    # Initialize variables
+    best_valid_accuracy = 0.0
+    best_valid_loss = np.inf
+    epoch = options.beginning_epoch
+
+
+
+    model.train()  # set the module to training mode
+
+    early_stopping = EarlyStopping('min', min_delta=options.tolerance, patience=options.patience)
+    mean_loss_valid = None
+
+    while epoch < options.epochs and not early_stopping.step(mean_loss_valid):
+        print("At %d-th epoch." % epoch)
+
+        model.zero_grad()
+        evaluation_flag = True
+        step_flag = True
+        tend = time()
+        total_time = 0
+
+        for i, data in enumerate(train_loader, 0):
+            t0 = time()
+            total_time = total_time + t0 - tend
+            if options.gpu:
+                imgs, labels1, labels2, labels3, labels4 = data['image'].cuda(), data['label_1'].cuda(), \
+                                                           data['label_2'].cuda(), data['label_3'].cuda(), data['label_4'].cuda()
+            else:
+                imgs, labels1, labels2, labels3, labels4 = data['image'], data['label_1'], data['label_2'], data['label_3'], data['label_4']
+
+            ### to delete after test
+            imgs[imgs != imgs] = 0
+            imgs = (imgs - imgs.min()) / (imgs.max() - imgs.min())
+
+            train_output_1, train_output_2, train_output_3, train_output_4 = model(imgs)
+
+            #_, predict_batch = train_output.topk(1) ### WHERE DO I USE IT ?
+
+            loss_1 = criterion(train_output_1, labels1) ## 4 criterion to give different weights
+            loss_2 = criterion(train_output_2, labels2)
+            loss_3 = criterion(train_output_3, labels3)
+            loss_4 = criterion(train_output_4, labels4)
+
+            loss = loss_1 + loss_2 + loss_3 + loss_4 ##I should weight them if one is bigger than the others
+
+
+            # Back propagation
+            loss.backward()
+
+            del imgs, labels1, labels2, labels3, labels4
+
+            if (i + 1) % options.accumulation_steps == 0:
+                step_flag = False
+                optimizer.step()
+                optimizer.zero_grad()
+
+                del loss
+
+                # Evaluate the model only when no gradients are accumulated
+                if options.evaluation_steps != 0 and (i + 1) % options.evaluation_steps == 0:
+                    evaluation_flag = False
+                    print('Iteration %d' % i)
+
+                    if options.multiclass == False:
+                        _, results_train = test_multitask(model, train_loader, options.gpu, criterion)
+                        _, results_valid = test_multitask(model, valid_loader, options.gpu, criterion)
+                    elif options.multiclass == True:
+                        _, results_train = test_multitask(model, train_loader, options.gpu, criterion, multiclass=True)
+                        _, results_valid = test_multitask(model, valid_loader, options.gpu, criterion, multiclass=True)
+
+
+                    mean_loss_train = results_train["total_loss"] / (len(train_loader) * train_loader.batch_size)
+                    mean_loss_valid = results_valid["total_loss"] / (len(valid_loader) * valid_loader.batch_size)
+                    model.train()
+
+                    global_step = i + epoch * len(train_loader)
+
+                    # Write results on the dataframe
+                    row = np.array([epoch, i, results_train["balanced_accuracy_1"],
+                                    results_train["balanced_accuracy_2"], results_train["balanced_accuracy_3"],
+                                    results_train["balanced_accuracy_4"],
+                                    mean_loss_train, results_valid["balanced_accuracy_1"],
+                                    results_valid["balanced_accuracy_2"],results_valid["balanced_accuracy_3"],
+                                    results_valid["balanced_accuracy_4"], mean_loss_valid]).reshape(1, -1)
+                    row_df = pd.DataFrame(row, columns=columns)
+                    with open(filename, 'a') as f:
+                        row_df.to_csv(f, header=False, index=False, sep='\t')
+
+                    print("%s level training accuracy is %f at the end of iteration %d"
+                          % (options.mode, results_train["balanced_accuracy"], i))
+                    print("%s level validation accuracy is %f at the end of iteration %d"
+                          % (options.mode, results_valid["balanced_accuracy"], i))
+
+            tend = time()
+        print('Mean time per batch loading (train):', total_time / len(train_loader) * train_loader.batch_size)
+
+        # If no step has been performed, raise Exception
+        if step_flag:
+            raise Exception('The model has not been updated once in the epoch. The accumulation step may be too large.')
+
+        # If no evaluation has been performed, warn the user
+        elif evaluation_flag and options.evaluation_steps != 0:
+            warnings.warn('Your evaluation steps are too big compared to the size of the dataset.'
+                          'The model is evaluated only once at the end of the epoch')
+
+        # Always test the results and save them once at the end of the epoch
+        model.zero_grad()
+        print('Last checkpoint at the end of the epoch %d' % epoch)
+
+        if options.multiclass == False:
+            _, results_train = test(model, train_loader, options.gpu, criterion)
+            _, results_valid = test(model, valid_loader, options.gpu, criterion)
+        elif options.multiclass == True:
+            _, results_train = test(model, train_loader, options.gpu, criterion, multiclass=True)
+            _, results_valid = test(model, valid_loader, options.gpu, criterion, multiclass=True)
+
+
+        mean_loss_train = results_train["total_loss"] / (len(train_loader) * train_loader.batch_size)
+        mean_loss_valid = results_valid["total_loss"] / (len(valid_loader) * valid_loader.batch_size)
+        model.train()
+
+        global_step = (epoch + 1) * len(train_loader)
+
+        # Write results on the dataframe
+        row = np.array([epoch, i, results_train["balanced_accuracy_1"],
+                        results_train["balanced_accuracy_2"], results_train["balanced_accuracy_3"],
+                        results_train["balanced_accuracy_4"],
+                        mean_loss_train, results_valid["balanced_accuracy_1"],
+                        results_valid["balanced_accuracy_2"], results_valid["balanced_accuracy_3"],
+                        results_valid["balanced_accuracy_4"], mean_loss_valid]).reshape(1, -1)
+        row_df = pd.DataFrame(row, columns=columns)
+        with open(filename, 'a') as f:
+            row_df.to_csv(f, header=False, index=False, sep='\t')
+
+        print("%s level training accuracy is %f at the end of iteration %d"
+              % (options.mode, results_train["balanced_accuracy"], len(train_loader)))
+        print("%s level validation accuracy is %f at the end of iteration %d"
+              % (options.mode, results_valid["balanced_accuracy"], len(train_loader)))
+
+
+        average_balanced_accuracy = (results_valid["balanced_accuracy_1"].item() +
+                                     results_valid["balanced_accuracy_2"].item() +\
+                                    results_valid["balanced_accuracy_3"].item() +
+                                     results_valid["balanced_accuracy_4"].item())/4
+        average_accuracy = (results_valid["accuracy_1"].item() +
+                            results_valid["accuracy_2"].item() + \
+                            results_valid["accuracy_3"].item() +
+                            results_valid["accuracy_4"].item())/4
+
+        accuracy_is_best = average_balanced_accuracy > best_valid_accuracy
+        loss_is_best = mean_loss_valid < best_valid_loss
+        best_valid_accuracy = max(average_accuracy, best_valid_accuracy)
+        best_valid_loss = min(mean_loss_valid, best_valid_loss)
+
+        save_checkpoint({'model': model.state_dict(),
+                         'epoch': epoch,
+                         'valid_loss': mean_loss_valid,
+                         'valid_acc': average_balanced_accuracy},
+                        accuracy_is_best, loss_is_best,
+                        model_dir)
+        # Save optimizer state_dict to be able to reload
+        save_checkpoint({'optimizer': optimizer.state_dict(),
+                         'epoch': epoch,
+                         'name': options.optimizer,
+                         },
+                        False, False,
+                        model_dir,
+                        filename='optimizer.pth.tar')
+
+        epoch += 1
+
+    os.remove(os.path.join(model_dir, "optimizer.pth.tar"))
+    os.remove(os.path.join(model_dir, "checkpoint.pth.tar"))
+
+
+def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multiclass=False):
+    """
+    Computes the predictions and evaluation metrics.
+
+    Args:
+        model: (Module) CNN to be tested.
+        dataloader: (DataLoader) wrapper of a dataset.
+        use_cuda: (bool) if True a gpu is used.
+        criterion: (loss) function to calculate the loss.
+        mode: (str) input used by the network. Chosen from ['image', 'patch', 'roi', 'slice'].
+    Returns
+        (DataFrame) results of each input.
+        (dict) ensemble of metrics + total loss on mode level.
+    """
+    print('multiclass is')
+    print(multiclass)
+    model.eval()
+
+    if mode == "image":
+        columns = ["participant_id", "session_id", "true_label_1", "predicted_label_1",
+                   "true_label_2", "predicted_label_2", "true_label_3", "predicted_label_3",
+                   "true_label_4", "predicted_label_4"]
+    elif mode in ["patch", "roi", "slice"]:
+        columns = ['participant_id', 'session_id', '%s_id' % mode, 'true_label', 'predicted_label', 'proba0', 'proba1']
+    else:
+        raise ValueError("The mode %s is invalid." % mode)
+
+    softmax = torch.nn.Softmax(dim=1)
+    results_df = pd.DataFrame(columns=columns)
+    total_loss = 0
+    total_time = 0
+    tend = time()
+    with torch.no_grad():
+        for i, data in enumerate(dataloader, 0):
+            t0 = time()
+            total_time = total_time + t0 - tend
+            if use_cuda:
+                inputs, labels1, labels2, labels3, labels4 = data['image'].cuda(), data['label_1'].cuda(), \
+                                                           data['label_2'].cuda(), data['label_3'].cuda(), data[
+                                                               'label_4'].cuda()
+
+            else:
+                inputs, labels1, labels2, labels3, labels4 = data['image'], data['label_1'], data['label_2'], \
+                                                             data['label_3'], data['label_4']
+
+
+            inputs[inputs != inputs] = 0
+            inputs = (inputs - inputs.min()) / (inputs.max() - inputs.min())
+
+
+            outputs1, outputs2, outputs3, outputs4 = model(inputs)
+            loss1 = criterion(outputs1, labels1)
+            loss2 = criterion(outputs2, labels2)
+            loss3 = criterion(outputs3, labels3)
+            loss4 = criterion(outputs4, labels4)
+
+            loss = loss1 + loss2 + loss3 + loss4
+
+            total_loss += loss.item()
+            _, predicted_1 = torch.max(outputs1.data, 1)
+            _, predicted_2 = torch.max(outputs2.data, 1)
+            _, predicted_3 = torch.max(outputs3.data, 1)
+            _, predicted_4 = torch.max(outputs4.data, 1)
+
+            # Generate detailed DataFrame
+            for idx, sub in enumerate(data['participant_id']):
+                if mode == "image":
+                    row = [[sub, data['session_id'][idx], labels1[idx].item(), predicted_1[idx].item(),
+                            labels2[idx].item(), predicted_2[idx].item(), labels3[idx].item(),
+                            labels4[idx].item(), predicted_4[idx].item()]]
+                else: # not for multi-task since we are only working on images
+                    normalized_output = softmax(outputs)
+                    row = [[sub, data['session_id'][idx], data['%s_id' % mode][idx].item(),
+                            labels[idx].item(), predicted[idx].item(),
+                            normalized_output[idx, 0].item(), normalized_output[idx, 1].item()]]
+
+                row_df = pd.DataFrame(row, columns=columns)
+                results_df = pd.concat([results_df, row_df])
+
+            del inputs, outputs1, outputs2, outputs2, outputs3, outputs4, loss
+            tend = time()
+        print('Mean time per batch loading (test):', total_time / len(dataloader) * dataloader.batch_size)
+        results_df.reset_index(inplace=True, drop=True)
+
+        # calculate the balanced accuracy
+        if multiclass == False:
+            results_1 = evaluate_prediction(results_df.true_label_1.values.astype(int),
+                                      results_df.predicted_label_1.values.astype(int))
+            results_1 = results_1[['accuracy', 'balanced_accuracy']]
+
+            results_2 = evaluate_prediction(results_df.true_label_2.values.astype(int),
+                                            results_df.predicted_label_2.values.astype(int))
+            results_3 = evaluate_prediction(results_df.true_label_3.values.astype(int),
+                                            results_df.predicted_label_3.values.astype(int))
+            results_4 = evaluate_prediction(results_df.true_label_4.values.astype(int),
+                                            results_df.predicted_label_4.values.astype(int))
+
+        elif multiclass == True:
+            results_1 = evaluate_prediction_multiclass(results_df.true_label_1.values.astype(int),
+                                      results_df.predicted_label_1.values.astype(int))
+            results_2 = evaluate_prediction_multiclass(results_df.true_label_2.values.astype(int),
+                                                     results_df.predicted_label_2.values.astype(int))
+            results_3 = evaluate_prediction_multiclass(results_df.true_label_3.values.astype(int),
+                                                     results_df.predicted_label_3.values.astype(int))
+            results_4 = evaluate_prediction_multiclass(results_df.true_label_4.values.astype(int),
+                                                     results_df.predicted_label_4.values.astype(int))
+
+
+
+        results_df.reset_index(inplace=True, drop=True)
+        results = pd.DataFrame(data={'accuracy_1': results_1.accuracy, 'balanced_accuracy_1': results_1.balanced_accuracy,
+                                     'accuracy_2': results_2.accuracy, 'balanced_accuracy_2': results_2.balanced_accuracy,
+                                     'accuracy_3': results_3.accuracy, 'balanced_accuracy_3': results_3.balanced_accuracy,
+                                     'accuracy_4': results_4.accuracy, 'balanced_accuracy_4': results_4.balanced_accuracy})
+        results['total_loss'] = total_loss
+        torch.cuda.empty_cache()
+
+
+
+    return results_df, results
