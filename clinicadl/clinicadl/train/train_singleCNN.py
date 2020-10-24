@@ -42,7 +42,6 @@ def train_single_cnn(params):
             fi,
             n_splits=params.n_splits,
             baseline=params.baseline)
-
         data_train = return_dataset(params.mode, params.input_dir, training_df, params.preprocessing,
                                     transformations, params)
         data_valid = return_dataset(params.mode, params.input_dir, valid_df, params.preprocessing,
