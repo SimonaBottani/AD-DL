@@ -416,6 +416,169 @@ class MRIDatasetSlice(MRIDataset):
 
         return triple_slice
 
+class MRIDatasetMultiLabel(Dataset):
+    """Abstract class for all derived MRIDatasets."""
+
+    def __init__(self, caps_directory, data_file,
+                 preprocessing, transformations=None):
+        self.caps_directory = caps_directory
+        self.transformations = transformations
+        self.diagnosis_code = {
+            'tier_1': 0,
+            'tier_2': 1,
+            'tier_3': 2,
+            'tier_4': 3,
+            'gaudo_0': 0,
+            'gaudo_1': 1,
+            'mov_0': 0,
+            'mov_1': 1,
+            'cont_0': 0,
+            'cont_1': 1,
+            'nan': -1}
+        self.preprocessing = preprocessing
+
+        if not hasattr(self, 'elem_index'):
+            raise ValueError(
+                "Child class of MRIDataset must set elem_index attribute.")
+        if not hasattr(self, 'mode'):
+            raise ValueError(
+                "Child class of MRIDataset must set mode attribute.")
+
+        # Check the format of the tsv file here
+        if isinstance(data_file, str):
+            self.df = pd.read_csv(data_file, sep='\t')
+        elif isinstance(data_file, pd.DataFrame):
+            self.df = data_file
+        else:
+            raise Exception('The argument data_file is not of correct type.')
+
+        mandatory_col = {"participant_id", "session_id", "diagnosis"}
+        if self.elem_index == "mixed":
+            mandatory_col.add("%s_id" % self.mode)
+
+        if not mandatory_col.issubset(set(self.df.columns.values)):
+            raise Exception("the data file is not in the correct format."
+                            "Columns should include %s" % mandatory_col)
+
+        self.elem_per_image = self.num_elem_per_image()
+
+    def __len__(self):
+        return len(self.df) * self.elem_per_image
+
+    def _get_path(self, participant, session, mode="image"):
+
+        if self.preprocessing == "t1-linear":
+            image_path = path.join(self.caps_directory, 'subjects', participant, session,
+                                   'deeplearning_prepare_data', '%s_based' % mode, 't1_linear',
+                                   participant + '_' + session
+                                   + FILENAME_TYPE['cropped'] + '.pt')
+        elif self.preprocessing == "t1-extensive":
+            image_path = path.join(self.caps_directory, 'subjects', participant, session,
+                                   'deeplearning_prepare_data', '%s_based' % mode, 't1_extensive',
+                                   participant + '_' + session
+                                   + FILENAME_TYPE['skull_stripped'] + '.pt')
+        else:
+            raise NotImplementedError(
+                "The path to preprocessing %s is not implemented" % self.preprocessing)
+
+        return image_path
+
+    def _get_meta_data(self, idx):
+        image_idx = idx // self.elem_per_image
+        participant = self.df.loc[image_idx, 'participant_id']
+        session = self.df.loc[image_idx, 'session_id']
+
+        if self.elem_index is None:
+            elem_idx = idx % self.elem_per_image
+        elif self.elem_index == "mixed":
+            elem_idx = self.df.loc[image_idx, '%s_id' % self.mode]
+        else:
+            elem_idx = self.elem_index
+
+        diagnosis = self.df.loc[image_idx, 'diagnosis']
+        label_1 = self.diagnosis_code[diagnosis]
+
+        diagnosis = self.df.loc[image_idx, 'diagnosis_gaudo']
+        label_2 = self.diagnosis_code[diagnosis]
+
+        diagnosis = self.df.loc[image_idx, 'diagnosis_a']
+        label_3 = self.diagnosis_code[diagnosis]
+
+        diagnosis = self.df.loc[image_idx, 'diagnosis_z']
+        label_4 = self.diagnosis_code[diagnosis]
+
+        return participant, session, elem_idx, label_1, label_2, label_3, label_4
+
+    def _get_full_image(self):
+        from ..data.utils import find_image_path as get_nii_path
+        import nibabel as nib
+
+        participant_id = self.df.loc[0, 'participant_id']
+        session_id = self.df.loc[0, 'session_id']
+
+        try:
+            image_path = self._get_path(participant_id, session_id, "image")
+            image = torch.load(image_path)
+            image[image != image] = 0
+            image = (image - image.min()) / (image.max() - image.min())
+            print(torch.max(torch.reshape(image, (-1,))))
+            print(torch.isnan(image).any())
+
+        except FileNotFoundError:
+            image_path = get_nii_path(
+                self.caps_directory,
+                participant_id,
+                session_id,
+                preprocessing=self.preprocessing)
+            image_nii = nib.load(image_path)
+            image_np = image_nii.get_fdata()
+            image = ToTensor()(image_np)
+
+        return image
+
+    @abc.abstractmethod
+    def __getitem__(self, idx):
+        pass
+
+    @abc.abstractmethod
+    def num_elem_per_image(self):
+        pass
+
+
+class MRIDatasetImageMultiLabel(MRIDatasetMultiLabel):
+    """Dataset of MRI organized in a CAPS folder."""
+
+    def __init__(self, caps_directory, data_file,
+                 preprocessing='t1-linear', transformations=None):
+        """
+        Args:
+            caps_directory (string): Directory of all the images.
+            data_file (string or DataFrame): Path to the tsv file or DataFrame containing the subject/session list.
+            preprocessing (string): Defines the path to the data in CAPS.
+            transformations (callable, optional): Optional transform to be applied on a sample.
+
+        """
+        self.elem_index = None
+        self.mode = "image"
+        super().__init__(caps_directory, data_file, preprocessing, transformations)
+
+    def __getitem__(self, idx):
+        participant, session, _, label_1, label_2, label_3, label_4 = self._get_meta_data(idx)
+
+        image_path = self._get_path(participant, session, "image")
+        image = torch.load(image_path)
+
+        if self.transformations:
+            image = self.transformations(image)
+        sample = {'image': image, 'label_1': label_1, 'label_2': label_2, 'label_3': label_3,
+                  'label_4': label_4,
+                  'participant_id': participant, 'session_id': session,
+                  'image_path': image_path}
+
+        return sample
+
+    def num_elem_per_image(self):
+        return 1
 
 def return_dataset(mode, input_dir, data_df, preprocessing,
                    transformations, params, cnn_index=None):
