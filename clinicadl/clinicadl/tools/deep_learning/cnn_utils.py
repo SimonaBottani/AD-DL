@@ -858,6 +858,7 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
 
 
         results_df.reset_index(inplace=True, drop=True)
+        print(results_1)
         results = pd.DataFrame(data={'accuracy_1': results_1.accuracy, 'balanced_accuracy_1': results_1.balanced_accuracy,
                                      'accuracy_2': results_2.accuracy, 'balanced_accuracy_2': results_2.balanced_accuracy,
                                      'accuracy_3': results_3.accuracy, 'balanced_accuracy_3': results_3.balanced_accuracy,
