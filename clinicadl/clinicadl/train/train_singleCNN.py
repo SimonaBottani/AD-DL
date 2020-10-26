@@ -10,7 +10,7 @@ from ..tools.deep_learning.data import (get_transforms,
                                         load_data,
                                         return_dataset,
                                         weight_vector)
-from ..tools.deep_learning.cnn_utils import train
+from ..tools.deep_learning.cnn_utils import train, train_multitask
 from clinicadl.test.test_singleCNN import test_cnn
 
 
@@ -73,9 +73,6 @@ def train_single_cnn(params):
 
         # Initialize the model
         #calculate_weights
-        ## TEST##
-        print(train_loader)
-        print(data_valid)
         weights = weight_vector(params.tsv_path, params.diagnoses)
         print(weights)
 
@@ -99,10 +96,15 @@ def train_single_cnn(params):
             params.output_dir, 'fold-%i' % fi, 'models')
 
         print('Beginning the training task')
-        train(model, train_loader, valid_loader, criterion,
+        if params.multitask == True:
+            train_multitask(model, train_loader, valid_loader, criterion,
+                            optimizer, False, log_dir, model_dir, params)
+        else:
+            train(model, train_loader, valid_loader, criterion,
               optimizer, False, log_dir, model_dir, params)
 
         params.model_path = params.output_dir
+        #### TODO: change for multitask
         test_cnn(params.output_dir, train_loader, "train",
                  fi, criterion, params, gpu=params.gpu, multiclass=params.multiclass)
         test_cnn(params.output_dir, valid_loader, "validation",
