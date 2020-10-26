@@ -27,6 +27,9 @@ def train_single_cnn(params):
     of the last epoch that was completed before the crash.
     """
 
+    if params.multitask == True:
+        print('Multi-task learning')
+
     transformations = get_transforms(params.mode, params.minmaxnormalization)
 
     if params.split is None:
@@ -70,6 +73,9 @@ def train_single_cnn(params):
 
         # Initialize the model
         #calculate_weights
+        ## TEST##
+        print(data_train)
+        print(data_valid)
         weights = weight_vector(params.tsv_path, params.diagnoses)
         print(weights)
 

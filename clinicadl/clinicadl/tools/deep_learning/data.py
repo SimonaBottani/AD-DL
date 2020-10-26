@@ -602,12 +602,20 @@ def return_dataset(mode, input_dir, data_df, preprocessing,
         raise ValueError("Multi-CNN is not implemented for %s mode." % mode)
 
     if mode == "image":
-        return MRIDatasetImage(
-            input_dir,
-            data_df,
-            preprocessing,
-            transformations=transformations
-        )
+        if params.multitask == True:
+            return MRIDatasetImageMultiLabel(
+                input_dir,
+                data_df,
+                preprocessing,
+                transformations=transformations
+            )
+        else:
+            return MRIDatasetImage(
+                input_dir,
+                data_df,
+                preprocessing,
+                transformations=transformations
+            )
     if mode == "patch":
         return MRIDatasetPatch(
             input_dir,

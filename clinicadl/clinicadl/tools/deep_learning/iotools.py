@@ -55,7 +55,8 @@ class Parameters:
             prepare_dl: bool = False,
             visualization: bool = False,
             num_gpu: int=2,
-            multiclass: bool = False
+            multiclass: bool = False,
+            multitask: bool = False
     ):
         """
         Optional parameters used for training CNN.
@@ -125,6 +126,7 @@ class Parameters:
         self.selection_threshold = selection_threshold
         self.num_gpu = num_gpu
         self.multiclass = multiclass
+        self.multitask = multitask
 
 
 def check_and_clean(d):
