@@ -11,7 +11,7 @@ from ..tools.deep_learning.data import (get_transforms,
                                         return_dataset,
                                         weight_vector)
 from ..tools.deep_learning.cnn_utils import train, train_multitask
-from clinicadl.test.test_singleCNN import test_cnn
+from clinicadl.test.test_singleCNN import test_cnn, test_cnn_multitask
 
 
 def train_single_cnn(params):
@@ -107,8 +107,14 @@ def train_single_cnn(params):
               optimizer, False, log_dir, model_dir, params)
 
         params.model_path = params.output_dir
-        #### TODO: change for multitask
-        test_cnn(params.output_dir, train_loader, "train",
+        if params.multitask == True:
+           test_cnn_multitask(params.output_dir, train_loader, "train",
                  fi, criterion, params, gpu=params.gpu, multiclass=params.multiclass)
-        test_cnn(params.output_dir, valid_loader, "validation",
+           test_cnn_multitask(params.output_dir, valid_loader, "validation",
+                 fi, criterion, params, gpu=params.gpu, multiclass=params.multiclass)
+           
+        else:
+            test_cnn(params.output_dir, train_loader, "train",
+                 fi, criterion, params, gpu=params.gpu, multiclass=params.multiclass)
+            test_cnn(params.output_dir, valid_loader, "validation",
                  fi, criterion, params, gpu=params.gpu, multiclass=params.multiclass)
