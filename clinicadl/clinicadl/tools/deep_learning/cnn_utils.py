@@ -829,7 +829,7 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
                 row_df = pd.DataFrame(row, columns=columns)
                 results_df = pd.concat([results_df, row_df])
 
-            del inputs, outputs1, outputs2, outputs2, outputs3, outputs4, loss
+            del inputs, outputs2, outputs2, outputs3, outputs4, loss
             tend = time()
         print('Mean time per batch loading (test):', total_time / len(dataloader) * dataloader.batch_size)
         results_df.reset_index(inplace=True, drop=True)
