@@ -495,17 +495,18 @@ class MRIDatasetMultiLabel(Dataset):
         else:
             elem_idx = self.elem_index
 
-        diagnosis = self.df.loc[image_idx, 'diagnosis']
-        label_1 = self.diagnosis_code[diagnosis]
+        diagnosis_1 = self.df.loc[image_idx, 'diagnosis']
+        print(set(diagnosis_1))
+        label_1 = self.diagnosis_code[diagnosis_1]
 
-        diagnosis = self.df.loc[image_idx, 'diagnosis_gaudo']
-        label_2 = self.diagnosis_code[diagnosis]
+        diagnosis_2 = self.df.loc[image_idx, 'diagnosis_gaudo']
+        label_2 = self.diagnosis_code[diagnosis_2]
 
-        diagnosis = self.df.loc[image_idx, 'diagnosis_a']
-        label_3 = self.diagnosis_code[diagnosis]
+        diagnosis_3 = self.df.loc[image_idx, 'diagnosis_a']
+        label_3 = self.diagnosis_code[diagnosis_3]
 
-        diagnosis = self.df.loc[image_idx, 'diagnosis_z']
-        label_4 = self.diagnosis_code[diagnosis]
+        diagnosis_4 = self.df.loc[image_idx, 'diagnosis_z']
+        label_4 = self.diagnosis_code[diagnosis_4]
 
         return participant, session, elem_idx, label_1, label_2, label_3, label_4
 
