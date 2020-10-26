@@ -112,7 +112,7 @@ def train_single_cnn(params):
                  fi, criterion, params, gpu=params.gpu, multiclass=params.multiclass)
            test_cnn_multitask(params.output_dir, valid_loader, "validation",
                  fi, criterion, params, gpu=params.gpu, multiclass=params.multiclass)
-           
+
         else:
             test_cnn(params.output_dir, train_loader, "train",
                  fi, criterion, params, gpu=params.gpu, multiclass=params.multiclass)

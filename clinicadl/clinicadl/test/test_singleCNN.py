@@ -43,7 +43,7 @@ def test_cnn_multitask(output_dir, data_loader, subset_name, split, criterion, m
                                      metrics["balanced_accuracy_3"].item() +
                                      metrics["balanced_accuracy_4"].item()) / 4
 
-        print("%s level balanced accuracy is %f" % (model_options.mode, metrics['balanced_accuracy']))
+        print("%s level balanced accuracy is %f" % (model_options.mode, average_balanced_accuracy))
 
         mode_level_to_tsvs(output_dir, results_df, metrics, split, selection, model_options.mode, dataset=subset_name)
 
