@@ -838,8 +838,6 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
         if multiclass == False:
             results_1 = evaluate_prediction(results_df.true_label_1.values.astype(int),
                                       results_df.predicted_label_1.values.astype(int))
-            results_1 = results_1[['accuracy', 'balanced_accuracy']]
-
             results_2 = evaluate_prediction(results_df.true_label_2.values.astype(int),
                                             results_df.predicted_label_2.values.astype(int))
             results_3 = evaluate_prediction(results_df.true_label_3.values.astype(int),
