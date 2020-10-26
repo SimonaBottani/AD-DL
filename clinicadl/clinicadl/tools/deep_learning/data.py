@@ -496,7 +496,7 @@ class MRIDatasetMultiLabel(Dataset):
             elem_idx = self.elem_index
 
         diagnosis_1 = self.df.loc[image_idx, 'diagnosis']
-        print(set(diagnosis_1))
+        print((diagnosis_1))
         label_1 = self.diagnosis_code[diagnosis_1]
 
         diagnosis_2 = self.df.loc[image_idx, 'diagnosis_gaudo']
