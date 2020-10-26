@@ -432,8 +432,10 @@ class MRIDatasetMultiLabel(Dataset):
             'gaudo_1': 1,
             'mov_0': 0,
             'mov_1': 1,
+            'mov_2': 2,
             'cont_0': 0,
             'cont_1': 1,
+            'cont_2': 2,
             'nan': -1}
         self.preprocessing = preprocessing
 

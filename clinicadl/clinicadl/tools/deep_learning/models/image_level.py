@@ -125,13 +125,24 @@ class Conv5_FC3_MultiTask(nn.Module):
             nn.Linear(50, 3)
         )
 
+        self.classifier3 = nn.Sequential(
+            Flatten(),
+            nn.Dropout(p=dropout),
+            nn.Linear(128 * 6 * 7 * 6, 1300),
+            nn.ReLU(),
+            nn.Linear(1300, 50),
+            nn.ReLU(),
+            nn.Linear(50, 2)
+        )
+
+
 
         self.flattened_shape = [-1, 128, 6, 7, 6]
 
     def forward(self, x):
         x = self.features(x) # the same for all the tasks
         out1 = self.classifier1(x)
-        out2 = self.classifier2(x)
+        out2 = self.classifier3(x)
         out3 = self.classifier2(x)
         out4 = self.classifier2(x)
 
