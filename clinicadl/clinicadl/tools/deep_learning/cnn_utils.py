@@ -709,11 +709,6 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
         with open(filename, 'a') as f:
             row_df.to_csv(f, header=False, index=False, sep='\t')
 
-        print("%s level training accuracy is %f at the end of iteration %d"
-              % (options.mode, results_train["balanced_accuracy"], len(train_loader)))
-        print("%s level validation accuracy is %f at the end of iteration %d"
-              % (options.mode, results_valid["balanced_accuracy"], len(train_loader)))
-
 
         average_balanced_accuracy = (results_valid["balanced_accuracy_1"].item() +
                                      results_valid["balanced_accuracy_2"].item() +\
@@ -723,6 +718,11 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
                             results_valid["accuracy_2"].item() + \
                             results_valid["accuracy_3"].item() +
                             results_valid["accuracy_4"].item())/4
+
+        print("%s level training accuracy is %f at the end of iteration %d"
+              % (options.mode, average_balanced_accuracy, len(train_loader)))
+        print("%s level validation accuracy is %f at the end of iteration %d"
+              % (options.mode, average_accuracy, len(train_loader)))
 
         accuracy_is_best = average_balanced_accuracy > best_valid_accuracy
         loss_is_best = mean_loss_valid < best_valid_loss
