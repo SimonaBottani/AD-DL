@@ -818,7 +818,7 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
             for idx, sub in enumerate(data['participant_id']):
                 if mode == "image":
                     row = [[sub, data['session_id'][idx], labels1[idx].item(), predicted_1[idx].item(),
-                            labels2[idx].item(), predicted_2[idx].item(), labels3[idx].item(),
+                            labels2[idx].item(), predicted_2[idx].item(), labels3[idx].item(), predicted_3[idx].item(),
                             labels4[idx].item(), predicted_4[idx].item()]]
                 else: # not for multi-task since we are only working on images
                     normalized_output = softmax(outputs)
