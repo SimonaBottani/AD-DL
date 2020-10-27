@@ -21,6 +21,7 @@ def classify(caps_dir,
              gpu=True,
              prepare_dl=True,
              multiclass=False,
+             multitask=Fale
              num_gpu=2):
     """
     This function verify the input folders, and the existance of the json file
@@ -75,7 +76,7 @@ def classify(caps_dir,
         prefix_output,
         no_labels,
         gpu,
-        prepare_dl, multiclass)
+        prepare_dl, multiclass, multitask)
 
 
 def inference_from_model(caps_dir,
@@ -85,7 +86,7 @@ def inference_from_model(caps_dir,
                          prefix=None,
                          no_labels=False,
                          gpu=True,
-                         prepare_dl=False, multiclass=False):
+                         prepare_dl=False, multiclass=False, multitask=False):
     """
     Inference from previously trained model.
 
@@ -138,7 +139,8 @@ def inference_from_model(caps_dir,
     currentDirectory = pathlib.Path(model_path)
     # Search for 'fold-*' pattern
     currentPattern = "fold-*"
-
+    ## @TODO add multitask here
+    options.multitask = multitask
     best_model = {
         'best_acc': 'best_balanced_accuracy',
         'best_loss': 'best_loss'
