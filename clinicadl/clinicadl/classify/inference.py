@@ -290,6 +290,8 @@ def inference_from_model_generic(caps_dir, tsv_path, model_path, model_options,
             model_options.preprocessing,
             transformations,
             model_options)
+        print('i am here and these are my model_options')
+        print(model_options)
 
         # Load the data
         test_loader = DataLoader(
