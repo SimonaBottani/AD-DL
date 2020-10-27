@@ -7,7 +7,7 @@ import torch
 import pathlib
 from clinicadl.tools.deep_learning import create_model, load_model, read_json
 from clinicadl.tools.deep_learning.data import return_dataset, get_transforms, compute_num_cnn
-from clinicadl.tools.deep_learning.cnn_utils import test, soft_voting_to_tsvs, mode_level_to_tsvs
+from clinicadl.tools.deep_learning.cnn_utils import test, soft_voting_to_tsvs, mode_level_to_tsvs, test_multitask
 import pandas as pd
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -290,9 +290,6 @@ def inference_from_model_generic(caps_dir, tsv_path, model_path, model_options,
             model_options.preprocessing,
             transformations,
             model_options)
-        print('i am here and these are my model_options')
-        print(model_options)
-
         # Load the data
         test_loader = DataLoader(
             data_to_test,
@@ -302,13 +299,24 @@ def inference_from_model_generic(caps_dir, tsv_path, model_path, model_options,
             pin_memory=True)
 
         # Run the model on the data
-        predictions_df, metrics = test(
-            best_model,
-            test_loader,
-            gpu,
-            criterion,
-            model_options.mode, multiclass)
-            #mode=model_options.mode, multiclass)
+        if model_options.multitask == True:
+            predictions_df, metrics = test_multitask(
+                best_model,
+                test_loader,
+                gpu,
+                criterion,
+                model_options.mode,
+                multiclass
+            )
+        else:
+            predictions_df, metrics = test(
+                best_model,
+                test_loader,
+                gpu,
+                criterion,
+                model_options.mode, multiclass)
+                #mode=model_options.mode, multiclass)
+
 
         metrics_df = pd.DataFrame(metrics, index=[0])
 
