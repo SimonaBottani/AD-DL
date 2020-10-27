@@ -396,6 +396,7 @@ def classify_func(args):
         gpu=not args.use_cpu,
         prepare_dl=args.use_extracted_features,
         multiclass=args.multiclass,
+        multitask=args.multitask,
         num_gpu=args.num_gpu
     )
 
@@ -1082,6 +1083,12 @@ def parse_command_line():
         help='If True, multiclass classification',
         action="store_true",
         default=False)
+    classify_parser.add_argument(
+        '--multitask', '-multitaks',
+        help='If True, multitask learning classification',
+        action="store_true",
+        default=False)
+
     classify_parser.add_argument(
         '--num_gpu',
         default=2, type=int,
