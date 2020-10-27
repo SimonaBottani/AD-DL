@@ -21,7 +21,7 @@ def classify(caps_dir,
              gpu=True,
              prepare_dl=True,
              multiclass=False,
-             multitask=Fale
+             multitask=False,
              num_gpu=2):
     """
     This function verify the input folders, and the existance of the json file
@@ -141,6 +141,7 @@ def inference_from_model(caps_dir,
     currentPattern = "fold-*"
     ## @TODO add multitask here
     options.multitask = multitask
+    print(options.multitask)
     best_model = {
         'best_acc': 'best_balanced_accuracy',
         'best_loss': 'best_loss'
