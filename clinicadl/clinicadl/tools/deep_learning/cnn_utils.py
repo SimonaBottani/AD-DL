@@ -728,11 +728,11 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
         print('Last checkpoint at the end of the epoch %d' % epoch)
 
         if options.multiclass == False:
-            _, results_train = test_multitask(model, train_loader, options.gpu, criterion)
-            _, results_valid = test_multitask(model, valid_loader, options.gpu, criterion)
+            _, results_train = test_multitask(model, train_loader, options.gpu, criterion, multiclass=False, num_labels=options.num_labels)
+            _, results_valid = test_multitask(model, valid_loader, options.gpu, criterion, multiclass=False, num_labels=options.num_labels)
         elif options.multiclass == True:
-            _, results_train = test_multitask(model, train_loader, options.gpu, criterion, multiclass=True)
-            _, results_valid = test_multitask(model, valid_loader, options.gpu, criterion, multiclass=True)
+            _, results_train = test_multitask(model, train_loader, options.gpu, criterion, multiclass=True, num_labels=options.num_labels)
+            _, results_valid = test_multitask(model, valid_loader, options.gpu, criterion, multiclass=True, num_labels=options.num_labels)
 
 
         mean_loss_train = results_train["total_loss"] / (len(train_loader) * train_loader.batch_size)
