@@ -528,7 +528,7 @@ class MRIDatasetMultiLabel(Dataset):
 
         elif 'diagnosis_z' in l:
 
-            diagnosis_2 = self.df.loc[image_idx, 'diagnosis_a']
+            diagnosis_2 = self.df.loc[image_idx, 'diagnosis_z']
             label_2 = self.diagnosis_code[diagnosis_2]
 
             return participant, session, elem_idx, label_1, label_2
