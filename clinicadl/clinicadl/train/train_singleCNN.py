@@ -102,6 +102,8 @@ def train_single_cnn(params):
         if params.multitask == True:
             train_multitask(model, train_loader, valid_loader, criterion,
                             optimizer, False, log_dir, model_dir, params)
+            print('Number of outputs for multitask')
+            print(params.num_labels)
         else:
             train(model, train_loader, valid_loader, criterion,
               optimizer, False, log_dir, model_dir, params)
