@@ -599,19 +599,19 @@ class MRIDatasetImageMultiLabel(MRIDatasetMultiLabel):
 
         if self.transformations:
             image = self.transformations(image)
-        if len(data_tsv == 7):
+        if len(data_tsv) == 7:
             label_3 = data_tsv[5]
             label_4 = data_tsv[6]
             sample = {'image': image, 'label_1': label_1, 'label_2': label_2, 'label_3': label_3,
                   'label_4': label_4,
                   'participant_id': participant, 'session_id': session,
                   'image_path': image_path}
-        elif len(data_tsv == 6):
+        elif len(data_tsv) == 6:
             label_3 = data_tsv[5]
             sample = {'image': image, 'label_1': label_1, 'label_2': label_2, 'label_3': label_3,
                   'participant_id': participant, 'session_id': session,
                   'image_path': image_path}
-        elif len(data_tsv == 5):
+        elif len(data_tsv) == 5:
             sample = {'image': image, 'label_1': label_1, 'label_2': label_2,
                   'participant_id': participant, 'session_id': session,
                   'image_path': image_path}
