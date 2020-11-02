@@ -211,7 +211,7 @@ def inference_from_model(caps_dir,
 
 
 def inference_from_model_generic(caps_dir, tsv_path, model_path, model_options,
-                                 multiclass=False, num_cnn=None, selection="best_balanced_accuracy", ):
+                                 multiclass=False, num_cnn=None,selection="best_balanced_accuracy", ):
     '''
     Inference using an image/subject CNN model
 
@@ -306,7 +306,8 @@ def inference_from_model_generic(caps_dir, tsv_path, model_path, model_options,
                 gpu,
                 criterion,
                 model_options.mode,
-                multiclass
+                multiclass,
+                model_options.num_labels
             )
         else:
             predictions_df, metrics = test(

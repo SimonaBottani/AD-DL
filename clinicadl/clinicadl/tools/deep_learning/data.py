@@ -433,6 +433,8 @@ class MRIDatasetMultiLabel(Dataset):
             'mov_0': 0,
             'mov_1': 1,
             'mov_2': 2,
+            'noise_0': 0,
+            'noise_1': 1,
             'cont_0': 0,
             'cont_1': 1,
             'cont_2': 2,
