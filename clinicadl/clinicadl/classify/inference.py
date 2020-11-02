@@ -22,6 +22,7 @@ def classify(caps_dir,
              prepare_dl=True,
              multiclass=False,
              multitask=False,
+             num_labels=2,
              num_gpu=2):
     """
     This function verify the input folders, and the existance of the json file
@@ -76,7 +77,7 @@ def classify(caps_dir,
         prefix_output,
         no_labels,
         gpu,
-        prepare_dl, multiclass, multitask)
+        prepare_dl, multiclass, multitask, num_labels)
 
 
 def inference_from_model(caps_dir,
@@ -86,7 +87,8 @@ def inference_from_model(caps_dir,
                          prefix=None,
                          no_labels=False,
                          gpu=True,
-                         prepare_dl=False, multiclass=False, multitask=False):
+                         prepare_dl=False, multiclass=False, multitask=False,
+                         num_labels=2):
     """
     Inference from previously trained model.
 
@@ -142,6 +144,7 @@ def inference_from_model(caps_dir,
     ## @TODO add multitask here
     options.multitask = multitask
     print(options.multitask)
+    options.num_labels=num_labels
     best_model = {
         'best_acc': 'best_balanced_accuracy',
         'best_loss': 'best_loss'
