@@ -629,9 +629,9 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
 
             if options.num_labels == 4:
                 train_output_1, train_output_2, train_output_3, train_output_4 = model(imgs)
-            if options.num_labels == 3:
+            elif options.num_labels == 3:
                 train_output_1, train_output_2, train_output_3 = model(imgs)
-            if options.num_labels == 2:
+            elif options.num_labels == 2:
                 train_output_1, train_output_2 = model(imgs)
 
             #_, predict_batch = train_output.topk(1) ### WHERE DO I USE IT ?
