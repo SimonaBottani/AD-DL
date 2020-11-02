@@ -397,7 +397,7 @@ def classify_func(args):
         gpu=not args.use_cpu,
         prepare_dl=args.use_extracted_features,
         multiclass=args.multiclass,
-        multitask=args.multitask
+        multitask=args.multitask,
         num_gpu=args.num_gpu
     )
 
