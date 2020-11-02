@@ -109,9 +109,11 @@ def train_single_cnn(params):
         params.model_path = params.output_dir
         if params.multitask == True:
            test_cnn_multitask(params.output_dir, train_loader, "train",
-                 fi, criterion, params, gpu=params.gpu, multiclass=params.multiclass)
+                 fi, criterion, params, gpu=params.gpu, multiclass=params.multiclass,
+                              num_labels=params.num_labels)
            test_cnn_multitask(params.output_dir, valid_loader, "validation",
-                 fi, criterion, params, gpu=params.gpu, multiclass=params.multiclass)
+                 fi, criterion, params, gpu=params.gpu, multiclass=params.multiclass,
+                              num_labels=params.num_labels)
 
         else:
             test_cnn(params.output_dir, train_loader, "train",

@@ -56,7 +56,8 @@ class Parameters:
             visualization: bool = False,
             num_gpu: int=2,
             multiclass: bool = False,
-            multitask: bool = False
+            multitask: bool = False,
+            num_labels: int=2
     ):
         """
         Optional parameters used for training CNN.
@@ -127,6 +128,7 @@ class Parameters:
         self.num_gpu = num_gpu
         self.multiclass = multiclass
         self.multitask = multitask
+        self.num_labels = num_labels
 
 
 def check_and_clean(d):

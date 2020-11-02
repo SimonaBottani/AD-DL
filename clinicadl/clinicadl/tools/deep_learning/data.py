@@ -500,16 +500,38 @@ class MRIDatasetMultiLabel(Dataset):
         diagnosis_1 = self.df.loc[image_idx, 'diagnosis']
         label_1 = self.diagnosis_code[diagnosis_1]
 
-        diagnosis_2 = self.df.loc[image_idx, 'diagnosis_gaudo']
-        label_2 = self.diagnosis_code[diagnosis_2]
+        l = list(self.df.columns)
+        if 'diagnosis_a' in l:
 
-        diagnosis_3 = self.df.loc[image_idx, 'diagnosis_a']
-        label_3 = self.diagnosis_code[diagnosis_3]
+            diagnosis_2 = self.df.loc[image_idx, 'diagnosis_a']
+            label_2 = self.diagnosis_code[diagnosis_2]
 
-        diagnosis_4 = self.df.loc[image_idx, 'diagnosis_z']
-        label_4 = self.diagnosis_code[diagnosis_4]
+            if 'diagnosis_z' in l:
 
-        return participant, session, elem_idx, label_1, label_2, label_3, label_4
+                diagnosis_3 = self.df.loc[image_idx, 'diagnosis_z']
+                label_3 = self.diagnosis_code[diagnosis_3]
+
+                if 'diagnosis_d' in l:
+
+                    diagnosis_4 = self.df.loc[image_idx, 'diagnosis_d']
+                    label_4 = self.diagnosis_code[diagnosis_4]
+
+                    return participant, session, elem_idx, label_1, label_2, label_3, label_4
+
+                else:
+
+                    return participant, session, elem_idx, label_1, label_2, label_3
+
+            else:
+
+                return participant, session, elem_idx, label_1, label_2
+
+        elif 'diagnosis_z' in l:
+
+            diagnosis_2 = self.df.loc[image_idx, 'diagnosis_a']
+            label_2 = self.diagnosis_code[diagnosis_2]
+
+            return participant, session, elem_idx, label_1, label_2
 
     def _get_full_image(self):
         from ..data.utils import find_image_path as get_nii_path
@@ -565,17 +587,36 @@ class MRIDatasetImageMultiLabel(MRIDatasetMultiLabel):
         super().__init__(caps_directory, data_file, preprocessing, transformations)
 
     def __getitem__(self, idx):
-        participant, session, _, label_1, label_2, label_3, label_4 = self._get_meta_data(idx)
 
+        data_tsv = self._get_meta_data(idx)
+        #participant, session, _, label_1, label_2, label_3, label_4 = self._get_meta_data(idx)
+        participant = data_tsv[0]
+        session = data_tsv[1]
+        label_1 = data_tsv[3]
+        label_2 = data_tsv[4]
         image_path = self._get_path(participant, session, "image")
         image = torch.load(image_path)
 
         if self.transformations:
             image = self.transformations(image)
-        sample = {'image': image, 'label_1': label_1, 'label_2': label_2, 'label_3': label_3,
+        if len(data_tsv == 7):
+            label_3 = data_tsv[5]
+            label_4 = data_tsv[6]
+            sample = {'image': image, 'label_1': label_1, 'label_2': label_2, 'label_3': label_3,
                   'label_4': label_4,
                   'participant_id': participant, 'session_id': session,
                   'image_path': image_path}
+        elif len(data_tsv == 6):
+            label_3 = data_tsv[5]
+            sample = {'image': image, 'label_1': label_1, 'label_2': label_2, 'label_3': label_3,
+                  'participant_id': participant, 'session_id': session,
+                  'image_path': image_path}
+        elif len(data_tsv == 5):
+            sample = {'image': image, 'label_1': label_1, 'label_2': label_2,
+                  'participant_id': participant, 'session_id': session,
+                  'image_path': image_path}
+
+
 
         return sample
 

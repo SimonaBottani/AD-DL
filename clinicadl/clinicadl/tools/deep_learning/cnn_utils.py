@@ -570,9 +570,20 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
     # Create writers
 
     # Create tsv
-    columns = ['epoch', 'iteration', 'bacc_train_1', 'bacc_train_2', 'bacc_train_3', 'bacc_train_4',
+    if options.num_labels == 4:
+        columns = ['epoch', 'iteration', 'bacc_train_1', 'bacc_train_2', 'bacc_train_3', 'bacc_train_4',
                'mean_loss_train', 'bacc_valid_1', 'bacc_valid_2', 'bacc_valid_3', 'bacc_valid_4',
                'mean_loss_valid']
+    elif options.num_labels == 3:
+        columns = ['epoch', 'iteration', 'bacc_train_1', 'bacc_train_2', 'bacc_train_3',
+               'mean_loss_train', 'bacc_valid_1', 'bacc_valid_2', 'bacc_valid_3',
+               'mean_loss_valid']
+    elif options.num_labels == 2:
+        columns = ['epoch', 'iteration', 'bacc_train_1', 'bacc_train_2',
+               'mean_loss_train', 'bacc_valid_1', 'bacc_valid_2',
+               'mean_loss_valid']
+
+
     filename = os.path.join(log_dir, 'training.tsv')
 
     # Initialize variables
@@ -600,8 +611,15 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
             t0 = time()
             total_time = total_time + t0 - tend
             if options.gpu:
-                imgs, labels1, labels2, labels3, labels4 = data['image'].cuda(), data['label_1'].cuda(), \
+                if options.num_labels == 4:
+                    imgs, labels1, labels2, labels3, labels4 = data['image'].cuda(), data['label_1'].cuda(), \
                                                            data['label_2'].cuda(), data['label_3'].cuda(), data['label_4'].cuda()
+                elif options.num_labels == 3:
+                    imgs, labels1, labels2, labels3 = data['image'].cuda(), data['label_1'].cuda(), \
+                                                               data['label_2'].cuda(), data['label_3'].cuda()
+                elif options.num_labels == 2:
+                    imgs, labels1, labels2 = data['image'].cuda(), data['label_1'].cuda(), \
+                                                               data['label_2'].cuda()
             else:
                 imgs, labels1, labels2, labels3, labels4 = data['image'], data['label_1'], data['label_2'], data['label_3'], data['label_4']
 
@@ -609,22 +627,32 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
             imgs[imgs != imgs] = 0
             imgs = (imgs - imgs.min()) / (imgs.max() - imgs.min())
 
-            train_output_1, train_output_2, train_output_3, train_output_4 = model(imgs)
+            if options.num_labels == 4:
+                train_output_1, train_output_2, train_output_3, train_output_4 = model(imgs)
+            if options.num_labels == 3:
+                train_output_1, train_output_2, train_output_3 = model(imgs)
+            if options.num_labels == 2:
+                train_output_1, train_output_2 = model(imgs)
 
             #_, predict_batch = train_output.topk(1) ### WHERE DO I USE IT ?
 
-            loss_1 = criterion(train_output_1, labels1) ## 4 criterion to give different weights
+            loss_1 = criterion(train_output_1, labels1)
             loss_2 = criterion(train_output_2, labels2)
-            loss_3 = criterion(train_output_3, labels3)
-            loss_4 = criterion(train_output_4, labels4)
 
-            loss = loss_1 + loss_2 + loss_3 + loss_4 ##I should weight them if one is bigger than the others
-
+            if options.num_labels == 4:
+                loss_3 = criterion(train_output_3, labels3)
+                loss_4 = criterion(train_output_4, labels4)
+                loss = loss_1 + loss_2 + loss_3 + loss_4
+            elif options.num_labels == 3:
+                loss_3 = criterion(train_output_3, labels3)
+                loss = loss_1 + loss_2 + loss_3
+            elif options.num_labels == 2:
+                loss = loss_1 + loss_2
 
             # Back propagation
             loss.backward()
 
-            del imgs, labels1, labels2, labels3, labels4
+            del imgs, labels1, labels2#, labels3, labels4
 
             if (i + 1) % options.accumulation_steps == 0:
                 step_flag = False
@@ -639,11 +667,11 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
                     print('Iteration %d' % i)
 
                     if options.multiclass == False:
-                        _, results_train = test_multitask(model, train_loader, options.gpu, criterion)
-                        _, results_valid = test_multitask(model, valid_loader, options.gpu, criterion)
+                        _, results_train = test_multitask(model, train_loader, options.gpu, criterion, multiclass=False, num_labels=options.num_labels)
+                        _, results_valid = test_multitask(model, valid_loader, options.gpu, criterion, multiclass=False, num_labels=options.num_labels)
                     elif options.multiclass == True:
-                        _, results_train = test_multitask(model, train_loader, options.gpu, criterion, multiclass=True)
-                        _, results_valid = test_multitask(model, valid_loader, options.gpu, criterion, multiclass=True)
+                        _, results_train = test_multitask(model, train_loader, options.gpu, criterion, multiclass=True, num_labels=options.num_labels)
+                        _, results_valid = test_multitask(model, valid_loader, options.gpu, criterion, multiclass=True, num_labels=options.num_labels)
 
 
                     mean_loss_train = results_train["total_loss"] / (len(train_loader) * train_loader.batch_size)
@@ -653,12 +681,27 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
                     global_step = i + epoch * len(train_loader)
 
                     # Write results on the dataframe
-                    row = np.array([epoch, i, results_train["balanced_accuracy_1"],
-                                    results_train["balanced_accuracy_2"], results_train["balanced_accuracy_3"],
-                                    results_train["balanced_accuracy_4"],
-                                    mean_loss_train, results_valid["balanced_accuracy_1"],
-                                    results_valid["balanced_accuracy_2"],results_valid["balanced_accuracy_3"],
-                                    results_valid["balanced_accuracy_4"], mean_loss_valid]).reshape(1, -1)
+                    if options.num_labels == 4:
+                        row = np.array([epoch, i, results_train["balanced_accuracy_1"],
+                                        results_train["balanced_accuracy_2"], results_train["balanced_accuracy_3"],
+                                        results_train["balanced_accuracy_4"],
+                                        mean_loss_train, results_valid["balanced_accuracy_1"],
+                                        results_valid["balanced_accuracy_2"],results_valid["balanced_accuracy_3"],
+                                        results_valid["balanced_accuracy_4"], mean_loss_valid]).reshape(1, -1)
+                    elif options.num_labels == 3:
+                        row = np.array([epoch, i, results_train["balanced_accuracy_1"],
+                                        results_train["balanced_accuracy_2"], results_train["balanced_accuracy_3"],
+                                        mean_loss_train, results_valid["balanced_accuracy_1"],
+                                        results_valid["balanced_accuracy_2"],results_valid["balanced_accuracy_3"],
+                                        mean_loss_valid]).reshape(1, -1)
+                    elif options.num_labels == 2:
+                        row = np.array([epoch, i, results_train["balanced_accuracy_1"],
+                                        results_train["balanced_accuracy_2"],
+                                        mean_loss_train, results_valid["balanced_accuracy_1"],
+                                        results_valid["balanced_accuracy_2"],
+                                        mean_loss_valid]).reshape(1, -1)
+
+
                     row_df = pd.DataFrame(row, columns=columns)
                     with open(filename, 'a') as f:
                         row_df.to_csv(f, header=False, index=False, sep='\t')
@@ -699,25 +742,51 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
         global_step = (epoch + 1) * len(train_loader)
 
         # Write results on the dataframe
-        row = np.array([epoch, i, results_train["balanced_accuracy_1"],
-                        results_train["balanced_accuracy_2"], results_train["balanced_accuracy_3"],
-                        results_train["balanced_accuracy_4"],
-                        mean_loss_train, results_valid["balanced_accuracy_1"],
-                        results_valid["balanced_accuracy_2"], results_valid["balanced_accuracy_3"],
-                        results_valid["balanced_accuracy_4"], mean_loss_valid]).reshape(1, -1)
-        row_df = pd.DataFrame(row, columns=columns)
+        if options.num_labels == 4:
+            row = np.array([epoch, i, results_train["balanced_accuracy_1"],
+                            results_train["balanced_accuracy_2"], results_train["balanced_accuracy_3"],
+                            results_train["balanced_accuracy_4"],
+                            mean_loss_train, results_valid["balanced_accuracy_1"],
+                            results_valid["balanced_accuracy_2"], results_valid["balanced_accuracy_3"],
+                            results_valid["balanced_accuracy_4"], mean_loss_valid]).reshape(1, -1)
+        elif options.num_labels == 3:
+            row = np.array([epoch, i, results_train["balanced_accuracy_1"],
+                            results_train["balanced_accuracy_2"], results_train["balanced_accuracy_3"],
+                            mean_loss_train, results_valid["balanced_accuracy_1"],
+                            results_valid["balanced_accuracy_2"], results_valid["balanced_accuracy_3"],
+                            mean_loss_valid]).reshape(1, -1)
+        elif options.num_labels == 2:
+            row = np.array([epoch, i, results_train["balanced_accuracy_1"],
+                            results_train["balanced_accuracy_2"],
+                            mean_loss_train, results_valid["balanced_accuracy_1"],
+                            results_valid["balanced_accuracy_2"],
+                            mean_loss_valid]).reshape(1, -1)
+
+            row_df = pd.DataFrame(row, columns=columns)
         with open(filename, 'a') as f:
             row_df.to_csv(f, header=False, index=False, sep='\t')
 
-
-        average_balanced_accuracy = (results_valid["balanced_accuracy_1"].item() +
-                                     results_valid["balanced_accuracy_2"].item() +\
-                                    results_valid["balanced_accuracy_3"].item() +
-                                     results_valid["balanced_accuracy_4"].item())/4
-        average_accuracy = (results_valid["accuracy_1"].item() +
-                            results_valid["accuracy_2"].item() + \
-                            results_valid["accuracy_3"].item() +
-                            results_valid["accuracy_4"].item())/4
+        if options.num_labels == 4:
+            average_balanced_accuracy = (results_valid["balanced_accuracy_1"].item() +
+                                         results_valid["balanced_accuracy_2"].item() +
+                                        results_valid["balanced_accuracy_3"].item() +
+                                         results_valid["balanced_accuracy_4"].item())/4
+            average_accuracy = (results_valid["accuracy_1"].item() +
+                                results_valid["accuracy_2"].item() +
+                                results_valid["accuracy_3"].item() +
+                                results_valid["accuracy_4"].item())/4
+        elif options.num_labels == 3:
+            average_balanced_accuracy = (results_valid["balanced_accuracy_1"].item() +
+                                         results_valid["balanced_accuracy_2"].item() +
+                                         results_valid["balanced_accuracy_3"].item()) / 3
+            average_accuracy = (results_valid["accuracy_1"].item() +
+                                results_valid["accuracy_2"].item() +
+                                results_valid["accuracy_3"].item()) / 3
+        elif options.num_labels == 2:
+            average_balanced_accuracy = (results_valid["balanced_accuracy_1"].item() +
+                                         results_valid["balanced_accuracy_2"].item()) / 2
+            average_accuracy = (results_valid["accuracy_1"].item() +
+                                results_valid["accuracy_2"].item()) / 2
 
         print("%s level training accuracy is %f at the end of iteration %d"
               % (options.mode, average_balanced_accuracy, len(train_loader)))
@@ -750,7 +819,7 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
     os.remove(os.path.join(model_dir, "checkpoint.pth.tar"))
 
 
-def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multiclass=False):
+def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multiclass=False, num_labels=2):
     """
     Computes the predictions and evaluation metrics.
 
@@ -769,9 +838,17 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
     model.eval()
 
     if mode == "image":
-        columns = ["participant_id", "session_id", "true_label_1", "predicted_label_1",
-                   "true_label_2", "predicted_label_2", "true_label_3", "predicted_label_3",
-                   "true_label_4", "predicted_label_4"]
+        if num_labels == 4:
+            columns = ["participant_id", "session_id", "true_label_1", "predicted_label_1",
+                       "true_label_2", "predicted_label_2", "true_label_3", "predicted_label_3",
+                       "true_label_4", "predicted_label_4"]
+        elif num_labels == 3:
+            columns = ["participant_id", "session_id", "true_label_1", "predicted_label_1",
+                       "true_label_2", "predicted_label_2", "true_label_3", "predicted_label_3"]
+        elif num_labels == 2:
+            columns = ["participant_id", "session_id", "true_label_1", "predicted_label_1",
+                       "true_label_2", "predicted_label_2"]
+
     elif mode in ["patch", "roi", "slice"]:
         columns = ['participant_id', 'session_id', '%s_id' % mode, 'true_label', 'predicted_label', 'proba0', 'proba1']
     else:
@@ -787,9 +864,16 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
             t0 = time()
             total_time = total_time + t0 - tend
             if use_cuda:
-                inputs, labels1, labels2, labels3, labels4 = data['image'].cuda(), data['label_1'].cuda(), \
+                if num_labels == 4:
+                    inputs, labels1, labels2, labels3, labels4 = data['image'].cuda(), data['label_1'].cuda(), \
                                                            data['label_2'].cuda(), data['label_3'].cuda(), data[
                                                                'label_4'].cuda()
+                elif num_labels == 3:
+                    inputs, labels1, labels2, labels3 = data['image'].cuda(), data['label_1'].cuda(), \
+                                                                 data['label_2'].cuda(), data['label_3'].cuda()
+                elif num_labels == 2:
+                    inputs, labels1, labels2 = data['image'].cuda(), data['label_1'].cuda(), \
+                                                                 data['label_2'].cuda()
 
             else:
                 inputs, labels1, labels2, labels3, labels4 = data['image'], data['label_1'], data['label_2'], \
@@ -799,27 +883,52 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
             inputs[inputs != inputs] = 0
             inputs = (inputs - inputs.min()) / (inputs.max() - inputs.min())
 
+            if num_labels == 4:
+                outputs1, outputs2, outputs3, outputs4 = model(inputs)
+                loss1 = criterion(outputs1, labels1)
+                loss2 = criterion(outputs2, labels2)
+                loss3 = criterion(outputs3, labels3)
+                loss4 = criterion(outputs4, labels4)
+                loss = loss1 + loss2 + loss3 + loss4
+            if num_labels == 3:
+                outputs1, outputs2, outputs3 = model(inputs)
+                loss1 = criterion(outputs1, labels1)
+                loss2 = criterion(outputs2, labels2)
+                loss3 = criterion(outputs3, labels3)
+                loss = loss1 + loss2 + loss3
+            if num_labels == 2:
+                outputs1, outputs2 = model(inputs)
+                loss1 = criterion(outputs1, labels1)
+                loss2 = criterion(outputs2, labels2)
+                loss = loss1 + loss2
 
-            outputs1, outputs2, outputs3, outputs4 = model(inputs)
-            loss1 = criterion(outputs1, labels1)
-            loss2 = criterion(outputs2, labels2)
-            loss3 = criterion(outputs3, labels3)
-            loss4 = criterion(outputs4, labels4)
 
-            loss = loss1 + loss2 + loss3 + loss4
+
 
             total_loss += loss.item()
             _, predicted_1 = torch.max(outputs1.data, 1)
             _, predicted_2 = torch.max(outputs2.data, 1)
-            _, predicted_3 = torch.max(outputs3.data, 1)
-            _, predicted_4 = torch.max(outputs4.data, 1)
+            if num_labels == 3:
+                _, predicted_3 = torch.max(outputs3.data, 1)
+            elif num_labels == 4:
+                _, predicted_3 = torch.max(outputs3.data, 1)
+                _, predicted_4 = torch.max(outputs4.data, 1)
 
             # Generate detailed DataFrame
             for idx, sub in enumerate(data['participant_id']):
                 if mode == "image":
-                    row = [[sub, data['session_id'][idx], labels1[idx].item(), predicted_1[idx].item(),
+                    if num_labels == 4:
+                        row = [[sub, data['session_id'][idx], labels1[idx].item(), predicted_1[idx].item(),
                             labels2[idx].item(), predicted_2[idx].item(), labels3[idx].item(), predicted_3[idx].item(),
                             labels4[idx].item(), predicted_4[idx].item()]]
+                    elif num_labels == 3:
+                        row = [[sub, data['session_id'][idx], labels1[idx].item(), predicted_1[idx].item(),
+                            labels2[idx].item(), predicted_2[idx].item(), labels3[idx].item(), predicted_3[idx].item()]]
+                    elif num_labels == 2:
+                        row = [[sub, data['session_id'][idx], labels1[idx].item(), predicted_1[idx].item(),
+                            labels2[idx].item(), predicted_2[idx].item()]]
+
+
                 else: # not for multi-task since we are only working on images
                     normalized_output = softmax(outputs)
                     row = [[sub, data['session_id'][idx], data['%s_id' % mode][idx].item(),
@@ -840,9 +949,13 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
                                       results_df.predicted_label_1.values.astype(int))
             results_2 = evaluate_prediction(results_df.true_label_2.values.astype(int),
                                             results_df.predicted_label_2.values.astype(int))
-            results_3 = evaluate_prediction(results_df.true_label_3.values.astype(int),
+            if num_labels == 3:
+                results_3 = evaluate_prediction(results_df.true_label_3.values.astype(int),
                                             results_df.predicted_label_3.values.astype(int))
-            results_4 = evaluate_prediction(results_df.true_label_4.values.astype(int),
+            elif num_labels == 4:
+                results_3 = evaluate_prediction(results_df.true_label_3.values.astype(int),
+                                                results_df.predicted_label_3.values.astype(int))
+                results_4 = evaluate_prediction(results_df.true_label_4.values.astype(int),
                                             results_df.predicted_label_4.values.astype(int))
 
         elif multiclass == True:
@@ -850,19 +963,30 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
                                       results_df.predicted_label_1.values.astype(int))
             results_2 = evaluate_prediction_multiclass(results_df.true_label_2.values.astype(int),
                                                      results_df.predicted_label_2.values.astype(int))
-            results_3 = evaluate_prediction_multiclass(results_df.true_label_3.values.astype(int),
+            if num_labels == 3:
+                results_3 = evaluate_prediction_multiclass(results_df.true_label_3.values.astype(int),
                                                      results_df.predicted_label_3.values.astype(int))
-            results_4 = evaluate_prediction_multiclass(results_df.true_label_4.values.astype(int),
+            elif num_labels == 4:
+                results_4 = evaluate_prediction_multiclass(results_df.true_label_4.values.astype(int),
                                                      results_df.predicted_label_4.values.astype(int))
 
 
 
         results_df.reset_index(inplace=True, drop=True)
-        print(results_1)
-        results ={'accuracy_1': results_1['accuracy'], 'balanced_accuracy_1': results_1['balanced_accuracy'],
-                'accuracy_2': results_2['accuracy'], 'balanced_accuracy_2': results_2['balanced_accuracy'],
-                 'accuracy_3': results_3['accuracy'], 'balanced_accuracy_3': results_3['balanced_accuracy'],
-                 'accuracy_4': results_4['accuracy'], 'balanced_accuracy_4': results_4['balanced_accuracy']}
+
+        if num_labels == 4:
+            results ={'accuracy_1': results_1['accuracy'], 'balanced_accuracy_1': results_1['balanced_accuracy'],
+                    'accuracy_2': results_2['accuracy'], 'balanced_accuracy_2': results_2['balanced_accuracy'],
+                     'accuracy_3': results_3['accuracy'], 'balanced_accuracy_3': results_3['balanced_accuracy'],
+                     'accuracy_4': results_4['accuracy'], 'balanced_accuracy_4': results_4['balanced_accuracy']}
+        elif num_labels == 3:
+            results ={'accuracy_1': results_1['accuracy'], 'balanced_accuracy_1': results_1['balanced_accuracy'],
+                    'accuracy_2': results_2['accuracy'], 'balanced_accuracy_2': results_2['balanced_accuracy'],
+                     'accuracy_3': results_3['accuracy'], 'balanced_accuracy_3': results_3['balanced_accuracy']}
+        elif num_labels == 2:
+            results = {'accuracy_1': results_1['accuracy'], 'balanced_accuracy_1': results_1['balanced_accuracy'],
+                       'accuracy_2': results_2['accuracy'], 'balanced_accuracy_2': results_2['balanced_accuracy']}
+
         results['total_loss'] = total_loss
         torch.cuda.empty_cache()
 

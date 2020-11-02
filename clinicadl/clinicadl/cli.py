@@ -170,7 +170,8 @@ def train_func(args):
                 transfer_learning_selection=args.transfer_learning_selection,
                 num_gpu=args.num_gpu,
                 multiclass=args.multiclass,
-                multitask=args.multitask
+                multitask=args.multitask,
+                num_labels=args.num_labels
             )
             train_single_cnn(train_params_cnn)
     elif args.mode == 'slice':
@@ -396,7 +397,7 @@ def classify_func(args):
         gpu=not args.use_cpu,
         prepare_dl=args.use_extracted_features,
         multiclass=args.multiclass,
-        multitask=args.multitask,
+        multitask=args.multitask
         num_gpu=args.num_gpu
     )
 
@@ -754,6 +755,11 @@ def parse_command_line():
         help='If True, multitask learning classification',
         action="store_true",
         default=False)
+    train_data_group.add_argument(
+        '--num_labels',
+        default=2, type=int,
+        help='Number of outputs for multitask learning if multitask==True. (default=2)')
+
 
 
     # Cross-validation
