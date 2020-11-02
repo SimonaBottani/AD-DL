@@ -890,13 +890,13 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
                 loss3 = criterion(outputs3, labels3)
                 loss4 = criterion(outputs4, labels4)
                 loss = loss1 + loss2 + loss3 + loss4
-            if num_labels == 3:
+            elif num_labels == 3:
                 outputs1, outputs2, outputs3 = model(inputs)
                 loss1 = criterion(outputs1, labels1)
                 loss2 = criterion(outputs2, labels2)
                 loss3 = criterion(outputs3, labels3)
                 loss = loss1 + loss2 + loss3
-            if num_labels == 2:
+            elif num_labels == 2:
                 outputs1, outputs2 = model(inputs)
                 loss1 = criterion(outputs1, labels1)
                 loss2 = criterion(outputs2, labels2)
