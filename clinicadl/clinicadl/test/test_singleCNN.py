@@ -30,18 +30,27 @@ def test_cnn(output_dir, data_loader, subset_name, split, criterion, model_optio
             soft_voting_to_tsvs(output_dir, split, selection=selection, mode=model_options.mode, dataset=subset_name,
                                 selection_threshold=model_options.selection_threshold)
 
-def test_cnn_multitask(output_dir, data_loader, subset_name, split, criterion, model_options, gpu=False, multiclass=False):
+def test_cnn_multitask(output_dir, data_loader, subset_name, split, criterion, model_options, gpu=False, multiclass=False,
+                       num_labels=2):
     for selection in ["best_balanced_accuracy", "best_loss"]:
         # load the best trained model during the training
         model = create_model(model_options.model, gpu, dropout=model_options.dropout)
         model, best_epoch = load_model(model, os.path.join(output_dir, 'fold-%i' % split, 'models', selection),
                                        gpu=gpu, filename='model_best.pth.tar')
 
-        results_df, metrics = test_multitask(model, data_loader, gpu, criterion, model_options.mode, multiclass)
-        average_balanced_accuracy = (metrics["balanced_accuracy_1"].item() +
+        results_df, metrics = test_multitask(model, data_loader, gpu, criterion, model_options.mode, multiclass, num_labels)
+        if num_labels == 4:
+            average_balanced_accuracy = (metrics["balanced_accuracy_1"].item() +
                                      metrics["balanced_accuracy_2"].item() + \
                                      metrics["balanced_accuracy_3"].item() +
                                      metrics["balanced_accuracy_4"].item()) / 4
+        elif num_labels == 3:
+            average_balanced_accuracy = (metrics["balanced_accuracy_1"].item() +
+                                         metrics["balanced_accuracy_2"].item() +
+                                         metrics["balanced_accuracy_3"].item()) / 3
+        elif num_labels == 2:
+            average_balanced_accuracy = (metrics["balanced_accuracy_1"].item() +
+                                         metrics["balanced_accuracy_2"].item()) / 2
 
         print("%s level balanced accuracy is %f" % (model_options.mode, average_balanced_accuracy))
 
