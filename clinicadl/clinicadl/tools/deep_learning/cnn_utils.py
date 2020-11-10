@@ -647,7 +647,7 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
                 loss_3 = criterion(train_output_3, labels3)
                 loss = loss_1 + loss_2 + loss_3
             elif options.num_labels == 2:
-                loss = loss_1 + loss_2
+                loss = 1.5 * loss_1 + loss_2
 
             # Back propagation
             loss.backward()
@@ -833,8 +833,8 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
         (DataFrame) results of each input.
         (dict) ensemble of metrics + total loss on mode level.
     """
-    print('multiclass is')
-    print(multiclass)
+    print('thesea are the number of labels is')
+    print(num_labels)
     model.eval()
 
     if mode == "image":
@@ -900,7 +900,7 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
                 outputs1, outputs2 = model(inputs)
                 loss1 = criterion(outputs1, labels1)
                 loss2 = criterion(outputs2, labels2)
-                loss = loss1 + loss2
+                loss = 1.5 * loss1 + loss2
 
 
 
