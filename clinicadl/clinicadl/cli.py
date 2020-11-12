@@ -399,7 +399,8 @@ def classify_func(args):
         multiclass=args.multiclass,
         multitask=args.multitask,
         num_labels=args.num_labels,
-        num_gpu=args.num_gpu
+        num_gpu=args.num_gpu,
+        selection_metrics=args.selection_metrics
     )
 
 # Functions to dispatch command line options from tsvtool to corresponding
@@ -1103,6 +1104,15 @@ def parse_command_line():
         '--num_gpu',
         default=2, type=int,
         help='Gpu to use if gpu ==True. (default=2)')
+    classify_parser.add_argument(
+        '--selection_metrics',
+        help='''List of metrics to find the best models to evaluate. Default will
+        classify best model based on balanced accuracy.''',
+        choices=['loss', 'balanced_accuracy'],
+        default=['balanced_accuracy'],
+        nargs='+'
+    )
+
 
 
     classify_parser.set_defaults(func=classify_func)

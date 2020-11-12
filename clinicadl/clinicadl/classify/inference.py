@@ -23,7 +23,8 @@ def classify(caps_dir,
              multiclass=False,
              multitask=False,
              num_labels=2,
-             num_gpu=2):
+             num_gpu=2,
+             selection_metrics=None):
     """
     This function verify the input folders, and the existance of the json file
     then it launch the inference stage from a specific model.
@@ -77,7 +78,8 @@ def classify(caps_dir,
         prefix_output,
         no_labels,
         gpu,
-        prepare_dl, multiclass, multitask, num_labels)
+        prepare_dl, multiclass, multitask, num_labels,
+    selection_metrics)
 
 
 def inference_from_model(caps_dir,
@@ -88,7 +90,8 @@ def inference_from_model(caps_dir,
                          no_labels=False,
                          gpu=True,
                          prepare_dl=False, multiclass=False, multitask=False,
-                         num_labels=2):
+                         num_labels=2,
+                         selection_metrics=None):
     """
     Inference from previously trained model.
 
@@ -141,7 +144,6 @@ def inference_from_model(caps_dir,
     currentDirectory = pathlib.Path(model_path)
     # Search for 'fold-*' pattern
     currentPattern = "fold-*"
-    ## @TODO add multitask here
     options.multitask = multitask
     print(options.multitask)
     options.num_labels=num_labels
@@ -155,28 +157,29 @@ def inference_from_model(caps_dir,
         fold = int(str(fold_dir).split("-")[-1])
         fold_path = join(model_path, fold_dir)
         model_path = join(fold_path, 'models')
+        for selection_metric in selection_metrics:
+            if options.mode_task == 'multicnn':
+                ### i do not implement here because i do not use multicnn
+                for cnn_dir in listdir(model_path):
+                    if not exists(join(model_path, cnn_dir, best_model['best_acc'], 'model_best.pth.tar')):
+                        raise FileNotFoundError(
+                            errno.ENOENT,
+                            strerror(errno.ENOENT),
+                            join(model_path,
+                                 cnn_dir,
+                                 best_model['best_acc'],
+                                 'model_best.pth.tar')
+                    )
 
-        if options.mode_task == 'multicnn':
-            for cnn_dir in listdir(model_path):
-                if not exists(join(model_path, cnn_dir, best_model['best_acc'], 'model_best.pth.tar')):
+            else:
+                full_model_path = join(model_path, "best_%s" % selection_metric)
+                if not exists(join(full_model_path, 'model_best.pth.tar')):
                     raise FileNotFoundError(
                         errno.ENOENT,
                         strerror(errno.ENOENT),
-                        join(model_path,
-                             cnn_dir,
-                             best_model['best_acc'],
-                             'model_best.pth.tar')
-                    )
+                        join(full_model_path, 'model_best.pth.tar'))
 
-        else:
-            full_model_path = join(model_path, best_model['best_acc'])
-            if not exists(join(full_model_path, 'model_best.pth.tar')):
-                raise FileNotFoundError(
-                    errno.ENOENT,
-                    strerror(errno.ENOENT),
-                    join(full_model_path, 'model_best.pth.tar'))
-
-        performance_dir = join(fold_path, 'cnn_classification', best_model['best_acc'])
+        performance_dir = join(fold_path, 'cnn_classification', 'best_%s' % selection_metric)
         if not exists(performance_dir):
             makedirs(performance_dir)
 
@@ -187,7 +190,9 @@ def inference_from_model(caps_dir,
             model_path,
             options,
             multiclass,
+            "best_%s" % selection_metric,
             num_cnn=num_cnn
+
         )
 
         # Prepare outputs
@@ -214,7 +219,7 @@ def inference_from_model(caps_dir,
 
 
 def inference_from_model_generic(caps_dir, tsv_path, model_path, model_options,
-                                 multiclass=False, num_cnn=None,selection="best_balanced_accuracy", ):
+                                 multiclass=False, selection="best_balanced_accuracy", num_cnn=None,):
     '''
     Inference using an image/subject CNN model
 
