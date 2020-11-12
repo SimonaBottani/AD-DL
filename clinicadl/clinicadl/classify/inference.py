@@ -202,7 +202,7 @@ def inference_from_model(caps_dir,
         print("Prediction results and metrics are written in the "
               "following folder: %s" % performance_dir)
 
-        mode_level_to_tsvs(currentDirectory, infered_classes, metrics, fold, best_model['best_acc'], options.mode,
+        mode_level_to_tsvs(currentDirectory, infered_classes, metrics, fold, "best_%s" % selection_metric, options.mode,
                            dataset=usr_prefix)
 
         # Soft voting
@@ -328,5 +328,6 @@ def inference_from_model_generic(caps_dir, tsv_path, model_path, model_options,
 
 
         metrics_df = pd.DataFrame(metrics, index=[0])
+
 
     return predictions_df, metrics_df
