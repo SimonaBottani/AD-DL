@@ -585,6 +585,8 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
                'mean_loss_train_1', 'mean_loss_train_2', 'mean_loss_train' 
                    'bacc_valid_1', 'bacc_valid_2',
                'mean_loss_valid_1', 'mean_loss_valid_2', 'mean_loss_valid']
+        print('len of the col')
+        print(len(columns))
 
 
     filename = os.path.join(log_dir, 'training.tsv')
@@ -718,6 +720,7 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
                                         results_valid["balanced_accuracy_2"],
                                         results_valid["tota_loss_1"] / d_valid, results_valid["total_loss_2"] / d_valid,
                                         mean_loss_valid]).reshape(1, -1)
+                        print(row)
 
 
                     row_df = pd.DataFrame(row, columns=columns)
@@ -788,10 +791,13 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
             row = np.array([epoch, i, results_train["balanced_accuracy_1"],
                             results_train["balanced_accuracy_2"],
                             results_train["total_loss_1"] / d_train, results_train["total_loss_2"] / d_train,
-                            mean_loss_train, results_valid["balanced_accuracy_1"],
-                            results_valid["balanced_accuracy_2"],
+                            mean_loss_train,
+                            results_valid["balanced_accuracy_1"], results_valid["balanced_accuracy_2"],
                             results_valid["total_loss_1"] / d_valid, results_valid["total_loss_2"] / d_valid,
-                            mean_loss_valid]).reshape(1, -1)
+                            mean_loss_valid]
+                           ).reshape(1, -1)
+            print('and these are the rows')
+            print(len(row))
 
         row_df = pd.DataFrame(row, columns=columns)
         with open(filename, 'a') as f:
