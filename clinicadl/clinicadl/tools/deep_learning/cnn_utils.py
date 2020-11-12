@@ -572,17 +572,17 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
     # Create tsv
     if options.num_labels == 4:
         columns = ['epoch', 'iteration', 'bacc_train_1', 'bacc_train_2', 'bacc_train_3', 'bacc_train_4',
-               'mean_loss_train_1', 'mean_loss_train_2', 'mean_loss_train_3', 'mean_loss_train_4', 'mean_loss_train'
+               'mean_loss_train_1', 'mean_loss_train_2', 'mean_loss_train_3', 'mean_loss_train_4', 'mean_loss_train',
                 'bacc_valid_1', 'bacc_valid_2', 'bacc_valid_3', 'bacc_valid_4',
                'mean_loss_valid_1', 'mean_loss_valid_2', 'mean_loss_valid_3', 'mean_loss_valid_4', 'mean_loss_valid']
     elif options.num_labels == 3:
         columns = ['epoch', 'iteration', 'bacc_train_1', 'bacc_train_2', 'bacc_train_3',
-               'mean_loss_train_1', 'mean_loss_train_2', 'mean_loss_train_3', 'mean_loss_train'
+               'mean_loss_train_1', 'mean_loss_train_2', 'mean_loss_train_3', 'mean_loss_train',
                    'bacc_valid_1', 'bacc_valid_2', 'bacc_valid_3',
                'mean_loss_valid_1', 'mean_loss_valid_2', 'mean_loss_valid_3', 'mean_loss_valid']
     elif options.num_labels == 2:
         columns = ['epoch', 'iteration', 'bacc_train_1', 'bacc_train_2',
-               'mean_loss_train_1', 'mean_loss_train_2', 'mean_loss_train' 
+               'mean_loss_train_1', 'mean_loss_train_2', 'mean_loss_train' ,
                    'bacc_valid_1', 'bacc_valid_2',
                'mean_loss_valid_1', 'mean_loss_valid_2', 'mean_loss_valid']
         print('len of the col')
