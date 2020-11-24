@@ -84,9 +84,12 @@ def train_single_cnn(params):
 
         # Define criterion and optimizer
         if params.multitask == True:
+            criterion_1 = torch.nn.CrossEntropyLoss(weight=torch.FloatTensor(weights).cuda())
             criterion = torch.nn.CrossEntropyLoss()
+            criterion = [criterion_1, criterion]
         else:
             criterion = torch.nn.CrossEntropyLoss(weight=torch.FloatTensor(weights).cuda())
+
         optimizer = eval("torch.optim." + params.optimizer)(filter(lambda x: x.requires_grad, model.parameters()),
                                                             lr=params.learning_rate,
                                                             weight_decay=params.weight_decay)

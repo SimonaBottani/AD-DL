@@ -585,11 +585,14 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
                'mean_loss_train_1', 'mean_loss_train_2', 'mean_loss_train' ,
                    'bacc_valid_1', 'bacc_valid_2',
                'mean_loss_valid_1', 'mean_loss_valid_2', 'mean_loss_valid']
-        print('len of the col')
-        print(len(columns))
 
 
     filename = os.path.join(log_dir, 'training.tsv')
+
+    ## read criterion in case of 2 criterion
+
+    criterion_1 = criterion[0]
+    criterion_2 = criterion[1]
 
     # Initialize variables
     best_valid_accuracy = 0.0
@@ -641,15 +644,15 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
 
             #_, predict_batch = train_output.topk(1) ### WHERE DO I USE IT ?
 
-            loss_1 = criterion(train_output_1, labels1)
-            loss_2 = criterion(train_output_2, labels2)
+            loss_1 = criterion_1(train_output_1, labels1)
+            loss_2 = criterion_2(train_output_2, labels2)
 
             if options.num_labels == 4:
-                loss_3 = criterion(train_output_3, labels3)
-                loss_4 = criterion(train_output_4, labels4)
+                loss_3 = criterion_2(train_output_3, labels3)
+                loss_4 = criterion_2(train_output_4, labels4)
                 loss = loss_1 + loss_2 + loss_3 + loss_4
             elif options.num_labels == 3:
-                loss_3 = criterion(train_output_3, labels3)
+                loss_3 = criterion_2(train_output_3, labels3)
                 loss = loss_1 + loss_2 + loss_3
             elif options.num_labels == 2:
                 loss = loss_1 + loss_2
@@ -720,7 +723,6 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
                                         results_valid["balanced_accuracy_2"],
                                         results_valid["tota_loss_1"] / d_valid, results_valid["total_loss_2"] / d_valid,
                                         mean_loss_valid]).reshape(1, -1)
-                        print(row)
 
 
                     row_df = pd.DataFrame(row, columns=columns)
@@ -796,8 +798,6 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
                             results_valid["total_loss_1"] / d_valid, results_valid["total_loss_2"] / d_valid,
                             mean_loss_valid]
                            ).reshape(1, -1)
-            print('and these are the rows')
-            print(len(row))
 
         row_df = pd.DataFrame(row, columns=columns)
         with open(filename, 'a') as f:
@@ -891,6 +891,10 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
     else:
         raise ValueError("The mode %s is invalid." % mode)
 
+    ## read 2 criterions
+    criterion_1 = criterion[0]
+    criterion_2 = criterion[1]
+
     softmax = torch.nn.Softmax(dim=1)
     results_df = pd.DataFrame(columns=columns)
     total_loss = 0
@@ -926,10 +930,10 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
 
             if num_labels == 4:
                 outputs1, outputs2, outputs3, outputs4 = model(inputs)
-                loss1 = criterion(outputs1, labels1)
-                loss2 = criterion(outputs2, labels2)
-                loss3 = criterion(outputs3, labels3)
-                loss4 = criterion(outputs4, labels4)
+                loss1 = criterion_1(outputs1, labels1)
+                loss2 = criterion_2(outputs2, labels2)
+                loss3 = criterion_2(outputs3, labels3)
+                loss4 = criterion_2(outputs4, labels4)
                 total_loss_1 += loss1.item()
                 total_loss_2 += loss2.item()
                 total_loss_3 += loss3.item()
@@ -937,17 +941,17 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
                 loss = loss1 + loss2 + loss3 + loss4
             elif num_labels == 3:
                 outputs1, outputs2, outputs3 = model(inputs)
-                loss1 = criterion(outputs1, labels1)
-                loss2 = criterion(outputs2, labels2)
-                loss3 = criterion(outputs3, labels3)
+                loss1 = criterion_1(outputs1, labels1)
+                loss2 = criterion_2(outputs2, labels2)
+                loss3 = criterion_2(outputs3, labels3)
                 total_loss_1 += loss1.item()
                 total_loss_2 += loss2.item()
                 total_loss_3 += loss3.item()
                 loss = loss1 + loss2 + loss3
             elif num_labels == 2:
                 outputs1, outputs2 = model(inputs)
-                loss1 = criterion(outputs1, labels1)
-                loss2 = criterion(outputs2, labels2)
+                loss1 = criterion_1(outputs1, labels1)
+                loss2 = criterion_2(outputs2, labels2)
                 total_loss_1 += loss1.item()
                 total_loss_2 += loss2.item()
                 loss = loss1 + loss2
