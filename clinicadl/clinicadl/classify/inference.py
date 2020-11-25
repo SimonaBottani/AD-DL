@@ -315,7 +315,8 @@ def inference_from_model_generic(caps_dir, tsv_path, model_path, model_options,
                 criterion,
                 model_options.mode,
                 multiclass,
-                model_options.num_labels
+                model_options.num_labels,
+                classify_function=True ## because i only have one criterion in the classify, since we are not in the training
             )
         else:
             predictions_df, metrics = test(

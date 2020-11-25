@@ -856,7 +856,8 @@ def train_multitask(model, train_loader, valid_loader, criterion, optimizer, res
     os.remove(os.path.join(model_dir, "checkpoint.pth.tar"))
 
 
-def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multiclass=False, num_labels=2):
+def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multiclass=False, num_labels=2,
+                   classify_function=False):
     """
     Computes the predictions and evaluation metrics.
 
@@ -891,9 +892,12 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
     else:
         raise ValueError("The mode %s is invalid." % mode)
 
-    ## read 2 criterions
-    criterion_1 = criterion[0]
-    criterion_2 = criterion[1]
+    if classify_function == False:
+    ## read 2 criterions if i am in the training
+        criterion_1 = criterion[0]
+        criterion_2 = criterion[1]
+    else:
+        criterion = criterion
 
     softmax = torch.nn.Softmax(dim=1)
     results_df = pd.DataFrame(columns=columns)
@@ -930,10 +934,16 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
 
             if num_labels == 4:
                 outputs1, outputs2, outputs3, outputs4 = model(inputs)
-                loss1 = criterion_1(outputs1, labels1)
-                loss2 = criterion_2(outputs2, labels2)
-                loss3 = criterion_2(outputs3, labels3)
-                loss4 = criterion_2(outputs4, labels4)
+                if classify_function == False:
+                    loss1 = criterion_1(outputs1, labels1)
+                    loss2 = criterion_2(outputs2, labels2)
+                    loss3 = criterion_2(outputs3, labels3)
+                    loss4 = criterion_2(outputs4, labels4)
+                else:
+                    loss1 = criterion(outputs1, labels1)
+                    loss2 = criterion(outputs2, labels2)
+                    loss3 = criterion(outputs3, labels3)
+                    loss4 = criterion(outputs4, labels4)
                 total_loss_1 += loss1.item()
                 total_loss_2 += loss2.item()
                 total_loss_3 += loss3.item()
@@ -941,17 +951,26 @@ def test_multitask(model, dataloader, use_cuda, criterion, mode="image", multicl
                 loss = loss1 + loss2 + loss3 + loss4
             elif num_labels == 3:
                 outputs1, outputs2, outputs3 = model(inputs)
-                loss1 = criterion_1(outputs1, labels1)
-                loss2 = criterion_2(outputs2, labels2)
-                loss3 = criterion_2(outputs3, labels3)
+                if classify_function == False:
+                    loss1 = criterion_1(outputs1, labels1)
+                    loss2 = criterion_2(outputs2, labels2)
+                    loss3 = criterion_2(outputs3, labels3)
+                else:
+                    loss1 = criterion(outputs1, labels1)
+                    loss2 = criterion(outputs2, labels2)
+                    loss3 = criterion(outputs3, labels3)
                 total_loss_1 += loss1.item()
                 total_loss_2 += loss2.item()
                 total_loss_3 += loss3.item()
                 loss = loss1 + loss2 + loss3
             elif num_labels == 2:
                 outputs1, outputs2 = model(inputs)
-                loss1 = criterion_1(outputs1, labels1)
-                loss2 = criterion_2(outputs2, labels2)
+                if classify_function == False:
+                    loss1 = criterion_1(outputs1, labels1)
+                    loss2 = criterion_2(outputs2, labels2)
+                else:
+                    loss1 = criterion(outputs1, labels1)
+                    loss2 = criterion(outputs2, labels2)
                 total_loss_1 += loss1.item()
                 total_loss_2 += loss2.item()
                 loss = loss1 + loss2
