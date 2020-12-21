@@ -2,6 +2,7 @@
 
 from .modules import PadMaxPool3d, Flatten
 import torch.nn as nn
+import torch
 
 """
 All the architectures are built here
