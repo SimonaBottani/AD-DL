@@ -545,7 +545,7 @@ class UNetUp(nn.Module):
 
     def forward(self, x, skip_input=None):
         if skip_input is not None:
-            print(x.shape())
+           # print(x.shape())
             print(skip_input)
             x = torch.cat((x, skip_input), 1)  # add the skip connection
         x = self.model(x)
