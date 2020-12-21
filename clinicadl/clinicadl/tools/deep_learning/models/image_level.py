@@ -532,7 +532,6 @@ class UNetUp(nn.Module):
         out_size : (int) number of channels in the output image.
 
     """
-    import torch.cat as cat
     def __init__(self, in_size, out_size):
         super(UNetUp, self).__init__()
         self.model = nn.Sequential(
@@ -557,7 +556,6 @@ class FinalLayer(nn.Module):
         out_size : (int) number of channels in the output image.
 
     """
-    import torch.cat as cat
     def __init__(self, in_size, out_size):
         super(FinalLayer, self).__init__()
         self.model = nn.Sequential(
