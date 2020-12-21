@@ -573,7 +573,7 @@ class FinalLayer(nn.Module):
         return x
 
 class GeneratorUNet(nn.Module):
-    def __init__(self, in_channels=1, out_channels=1):
+    def __init__(self, in_channels=1, out_channels=1, dropout=0.5):
         super(GeneratorUNet, self).__init__()
 
         self.down1 = UNetDown(in_channels, 64)
