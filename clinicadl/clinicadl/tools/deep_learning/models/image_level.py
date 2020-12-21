@@ -591,11 +591,18 @@ class GeneratorUNet(nn.Module):
         self.final = FinalLayer(128, 1)
 
     def forward(self, x):
+        print(x.shape)
         d1 = self.down1(x)
+        print(d1.shape)
         d2 = self.down2(d1)
+        print(d2.shape)
         d3 = self.down3(d2)
+        print(d3.shape)
         d4 = self.down4(d3)
+        print(d4.shape)
         d5 = self.down5(d4)
+        print(d5.shape)
+        print('U1')
 
         u1 = self.up1(d5)
         print(u1.shape)
