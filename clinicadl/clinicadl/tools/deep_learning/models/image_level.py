@@ -532,7 +532,7 @@ class UNetUp(nn.Module):
         out_size : (int) number of channels in the output image.
 
     """
-    import torch
+    import torch.cat as cat
     def __init__(self, in_size, out_size):
         super(UNetUp, self).__init__()
         self.model = nn.Sequential(
@@ -544,7 +544,7 @@ class UNetUp(nn.Module):
 
     def forward(self, x, skip_input=None):
         if skip_input is not None:
-            x = torch.cat((x, skip_input), 1)  # add the skip connection
+            x = cat((x, skip_input), 1)  # add the skip connection
         x = self.model(x)
         return x
 
@@ -557,7 +557,7 @@ class FinalLayer(nn.Module):
         out_size : (int) number of channels in the output image.
 
     """
-    import torch
+    import torch.cat as cat
     def __init__(self, in_size, out_size):
         super(FinalLayer, self).__init__()
         self.model = nn.Sequential(
@@ -568,7 +568,7 @@ class FinalLayer(nn.Module):
 
     def forward(self, x, skip_input=None):
         if skip_input is not None:
-            x = torch.cat((x, skip_input), 1)  # add the skip connection
+            x = cat((x, skip_input), 1)  # add the skip connection
         x = self.model(x)
         return x
 
