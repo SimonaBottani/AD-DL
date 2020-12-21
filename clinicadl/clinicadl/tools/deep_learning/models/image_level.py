@@ -545,6 +545,8 @@ class UNetUp(nn.Module):
 
     def forward(self, x, skip_input=None):
         if skip_input is not None:
+            print(x.shape())
+            print(skip_input)
             x = torch.cat((x, skip_input), 1)  # add the skip connection
         x = self.model(x)
         return x
@@ -598,10 +600,6 @@ class GeneratorUNet(nn.Module):
         d5 = self.down5(d4)
 
         u1 = self.up1(d5)
-        print('########### U1 ###############')
-        print(u1)
-        print('########### d4 ###############')
-        print(d4)
         u2 = self.up2(u1, d4)
         u3 = self.up3(u2, d3)
         u4 = self.up4(u3, d2)
