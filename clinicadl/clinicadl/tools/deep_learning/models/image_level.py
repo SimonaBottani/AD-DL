@@ -592,6 +592,10 @@ class GeneratorUNet(nn.Module):
 
     def forward(self, x):
         print(x.shape)
+        print('zero padding')
+        source = torch.zeros(256, 256, 256)
+        x[:169, :208, :179] = source
+        print(x.shape)
         d1 = self.down1(x)
         print(d1.shape)
         d2 = self.down2(d1)
