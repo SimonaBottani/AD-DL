@@ -766,6 +766,8 @@ class GoogLeNet3D_new(nn.Module):
         if self.training:
             print('i am here')
             print(out.shape)
+            print(aux_out1.shape)
+            print(aux_out2.shape)
             return out, aux_out1, aux_out2
         print(out.shape)
         return out
