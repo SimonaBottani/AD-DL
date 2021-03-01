@@ -768,7 +768,7 @@ class GoogLeNet3D_new(nn.Module):
             print(out.shape)
             print(aux_out1.shape)
             print(aux_out2.shape)
-            return out, aux_out1, aux_out2
+            return out#, aux_out1, aux_out2 TO VERIFY
         print(out.shape)
         return out
 
