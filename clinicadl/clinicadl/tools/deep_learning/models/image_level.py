@@ -731,7 +731,7 @@ class GoogLeNet3D_new(nn.Module):
         self.b5 = Inception(832, 384, 192, 384, 48, 128, 128)
 
         self.avgpool = nn.AvgPool3d((2, 3, 2), stride=1)
-        self.linear = nn.Linear(27648, 1)
+        self.linear = nn.Linear(27648, 2)
 
         self.aux1 = InceptionAux(512, 1)
         self.aux2 = InceptionAux(528, 1)
