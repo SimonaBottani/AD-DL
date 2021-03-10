@@ -83,6 +83,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
             imgs = (imgs - imgs.min()) / (imgs.max() - imgs.min())
 
             if model_name == 'GoogLeNet3D_new':
+                print('Google Net')
                 train_output, out_1, out_2 = model(imgs)
                 _, predict_batch = train_output.topk(1)
                 _, predict_batch_1 = out_1.topk(1)
