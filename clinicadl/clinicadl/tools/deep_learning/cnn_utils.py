@@ -15,7 +15,8 @@ from clinicadl.tools.deep_learning import EarlyStopping, save_checkpoint
 # CNN train / test  #
 #####################
 
-def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_dir, model_dir, options):
+def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_dir, model_dir,
+          model_name, options):
     """
     Function used to train a CNN.
     The best model and checkpoint will be found in the 'best_model_dir' of options.output_dir.
@@ -81,9 +82,19 @@ def train(model, train_loader, valid_loader, criterion, optimizer, resume, log_d
             imgs[imgs != imgs] = 0
             imgs = (imgs - imgs.min()) / (imgs.max() - imgs.min())
 
-            train_output = model(imgs)
-            _, predict_batch = train_output.topk(1)
-            loss = criterion(train_output, labels)
+            if model_name == 'GoogLeNet3D_new':
+                train_output, out_1, out_2 = model(imgs)
+                _, predict_batch = train_output.topk(1)
+                _, predict_batch_1 = out_1.topk(1)
+                _, predict_batch_2 = out_2.topk(1)
+                loss_1 = criterion(train_output, labels)
+                loss_2 = criterion(out_1, labels)
+                loss_3 = criterion(out_2, labels)
+                loss = loss_1 + loss_2 + loss_3
+            else:
+                train_output = model(imgs)
+                _, predict_batch = train_output.topk(1)
+                loss = criterion(train_output, labels)
 
             # Back propagation
             loss.backward()
@@ -292,7 +303,7 @@ def test(model, dataloader, use_cuda, criterion, mode="image", multiclass=False)
     """
     print('multiclass is')
     print(multiclass)
-    model.eval()
+    model.eval() ##automatically, self.training=False
 
     if mode == "image":
         columns = ["participant_id", "session_id", "true_label", "predicted_label"]

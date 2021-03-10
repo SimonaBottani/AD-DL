@@ -110,7 +110,7 @@ def train_single_cnn(params):
 
         else:
             train(model, train_loader, valid_loader, criterion,
-              optimizer, False, log_dir, model_dir, params)
+              optimizer, False, log_dir, model_dir, str(params.model), params)
 
         params.model_path = params.output_dir
         if params.multitask == True:
