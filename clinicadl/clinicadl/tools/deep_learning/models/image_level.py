@@ -733,8 +733,8 @@ class GoogLeNet3D_new(nn.Module):
         self.avgpool = nn.AvgPool3d((2, 3, 2), stride=1)
         self.linear = nn.Linear(27648, 2)
 
-        self.aux1 = InceptionAux(512, 1)
-        self.aux2 = InceptionAux(528, 1)
+        self.aux1 = InceptionAux(512, 2)
+        self.aux2 = InceptionAux(528, 2)
 
     def forward(self, x, covars = None):
         out = self.pre_layers(x)
