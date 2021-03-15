@@ -1660,6 +1660,7 @@ class ResNet(nn.Module):
         out = self.layer5(out)
 
         for layer in self.fc:
+            print(layer)
             #if isinstance(layer, AddingNodes):
             #    out = layer(out, covars)
             #else:
