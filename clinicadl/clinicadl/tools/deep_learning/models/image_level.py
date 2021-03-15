@@ -1628,7 +1628,7 @@ class ResNet(nn.Module):
             nn.Linear(128 * d * h * w, 256),  # t1 image
             nn.ELU(),
             nn.Dropout(p=0.8),
-            #AddingNodes(), only for covariables ? 
+            #AddingNodes(), only for covariables ?
             nn.Linear(256 + self.nb_covars, 2)
         )
 
@@ -1660,8 +1660,8 @@ class ResNet(nn.Module):
         out = self.layer5(out)
 
         for layer in self.fc:
-            print(layer)
-            #if isinstance(layer, AddingNodes):
+
+            #if isinstance(layer, AddingNodes): ## for covariable
             #    out = layer(out, covars)
             #else:
             out = layer(out)
