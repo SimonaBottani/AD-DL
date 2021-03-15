@@ -1605,7 +1605,7 @@ class ResBlock(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, n_covars, input_size, **kwargs):
+    def __init__(self, n_covars=None, input_size=[1, 169, 208, 179], **kwargs):
         super(ResNet, self).__init__()
         assert len(input_size) == 4, "input must be in 3d with the corresponding number of channels"
         self.nb_covars = n_covars
