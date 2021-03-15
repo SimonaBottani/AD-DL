@@ -802,8 +802,6 @@ class ResBlock(nn.Module):
         return out
 
 
-class Res# coding: utf8
-
 from .modules import PadMaxPool3d, Flatten
 import torch.nn as nn
 import torch
